@@ -1,0 +1,5 @@
+name: PermissionSystem
+version: 1.0
+author: SmallCode
+main: it.smallcode.permissionsystem.PermissionSystemPlugin
+api-version: '1.20'
