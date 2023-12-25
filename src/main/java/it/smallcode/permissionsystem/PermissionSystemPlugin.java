@@ -1,5 +1,6 @@
 package it.smallcode.permissionsystem;
 
+import it.smallcode.permissionsystem.commands.PermissionCommand;
 import it.smallcode.permissionsystem.database.MySQLDatabase;
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
@@ -24,7 +25,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
   private PermissionManager permissionManager;
 
   private PermissibleBaseHandler permissibleBaseHandler;
-  private SidebarHandler scoreboardHandler;
+  private SidebarHandler sidebarHandler;
 
   @Override
   public void onEnable() {
@@ -49,7 +50,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
     permissibleBaseHandler = new PermissibleBaseHandler(this, permissionManager,
         permissibleBaseUtils);
-    scoreboardHandler = new SidebarHandler(this, permissionManager, scoreboardManager);
+    sidebarHandler = new SidebarHandler(this, permissionManager, scoreboardManager);
 
     new JoinMessageHandler(this, permissionManager);
     new ChatMessageHandler(this, permissionManager);
@@ -57,10 +58,18 @@ public class PermissionSystemPlugin extends JavaPlugin {
     Bukkit.getPluginManager().registerEvents(new JoinListener(scoreboardManager), this);
     Bukkit.getPluginManager().registerEvents(new QuitListener(scoreboardManager), this);
 
+    Bukkit.getPluginCommand("permission")
+        .setExecutor(new PermissionCommand(this, permissionManager));
+
+    permissionManager.subscribe(permissibleBaseHandler);
+    permissionManager.subscribe(sidebarHandler);
   }
 
   @Override
   public void onDisable() {
+    permissionManager.unsubscribe(permissibleBaseHandler);
+    permissionManager.unsubscribe(sidebarHandler);
+
     try {
       database.disconnect();
     } catch (SQLException e) {

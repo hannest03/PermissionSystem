@@ -13,11 +13,9 @@ import org.bukkit.plugin.Plugin;
 
 public class ChatMessageHandler implements Listener {
 
-  private final Plugin plugin;
   private final PermissionManager permissionManager;
 
   public ChatMessageHandler(Plugin plugin, PermissionManager permissionManager) {
-    this.plugin = plugin;
     this.permissionManager = permissionManager;
 
     Bukkit.getPluginManager().registerEvents(this, plugin);

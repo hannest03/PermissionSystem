@@ -8,9 +8,12 @@ import it.smallcode.permissionsystem.datasource.mysql.builder.condition.BaseCond
 import it.smallcode.permissionsystem.datasource.mysql.builder.condition.OrCondition;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PermissionInfo;
+import it.smallcode.permissionsystem.models.PlayerGroup;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,11 +85,12 @@ public class MySQLDataSource implements PermissionDataSource {
   }
 
   @Override
-  public List<Group> getPlayerGroups(UUID uuid) {
+  public List<PlayerGroup> getPlayerGroups(UUID uuid) {
     SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
         .join(GROUP_TABLE,
             new BaseCondition(GROUP_TABLE + ".id = " + PLAYER_GROUPS_TABLE + ".id_group"))
         .field(GROUP_TABLE + ".*")
+        .field(PLAYER_GROUPS_TABLE + ".end_date")
         .where(new BaseCondition(PLAYER_GROUPS_TABLE + ".id_player = ?"))
         .order("priority DESC");
 
@@ -96,9 +100,14 @@ public class MySQLDataSource implements PermissionDataSource {
 
       ResultSet resultSet = statement.executeQuery();
 
-      List<Group> groups = new LinkedList<>();
+      List<PlayerGroup> groups = new LinkedList<>();
       while (resultSet.next()) {
-        groups.add(convertRowToGroup(resultSet));
+        Group group = convertRowToGroup(resultSet);
+        Timestamp timestamp = resultSet.getTimestamp("end_date");
+
+        Instant end = timestamp != null ? timestamp.toInstant() : null;
+
+        groups.add(new PlayerGroup(group, end));
       }
 
       resultSet.close();
@@ -111,11 +120,36 @@ public class MySQLDataSource implements PermissionDataSource {
 
   @Override
   public Group getPrimaryGroup(UUID uuid) {
-    List<Group> groups = this.getPlayerGroups(uuid);
+    List<PlayerGroup> groups = this.getPlayerGroups(uuid);
     if (groups == null || groups.isEmpty()) {
       return null;
     }
-    return groups.get(0);
+    return groups.get(0).group();
+  }
+
+  @Override
+  public void addGroup(UUID uuid, Group group, Instant end) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
+        .field("id_player")
+        .field("id_group");
+
+    if (end != null) {
+      queryBuilder.field("end_date");
+    }
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.insert())) {
+      statement.setString(1, uuid.toString());
+      statement.setInt(2, group.getId());
+
+      if (end != null) {
+        statement.setTimestamp(3, Timestamp.from(end));
+      }
+      
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
   }
 
   @Override

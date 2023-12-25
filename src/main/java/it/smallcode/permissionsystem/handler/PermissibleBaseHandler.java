@@ -2,6 +2,8 @@ package it.smallcode.permissionsystem.handler;
 
 import it.smallcode.permissionsystem.handler.permissible.PlayerPermissibleBase;
 import it.smallcode.permissionsystem.manager.PermissionManager;
+import it.smallcode.permissionsystem.manager.observer.PermissionEventObserver;
+import it.smallcode.permissionsystem.manager.observer.PermissionEventType;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.permissions.OptimizedPermissions;
 import it.smallcode.permissionsystem.permissions.PermissionChecker;
@@ -17,7 +19,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
-public class PermissibleBaseHandler implements Listener {
+public class PermissibleBaseHandler implements Listener, PermissionEventObserver {
 
   private final Plugin plugin;
 
@@ -60,10 +62,29 @@ public class PermissibleBaseHandler implements Listener {
       permissibleBaseUtils.setPermissibleBase(player, permissibleBase);
       playerPermissible.put(player.getUniqueId(), permissibleBase);
     }
-
     Set<PermissionInfo> permissionInfos = permissionManager.getPlayerPermissions(
         player.getUniqueId());
     PermissionChecker permissionChecker = new OptimizedPermissions(permissionInfos);
     permissibleBase.setPermissionChecker(permissionChecker);
+  }
+
+  @Override
+  public void onEvent(PermissionEventType eventType) {
+  }
+
+  @Override
+  public void onEvent(PermissionEventType eventType, UUID uuid) {
+    if (eventType != PermissionEventType.GROUP_PERMISSION_CHANGED
+        && eventType != PermissionEventType.PLAYER_PERMISSION_CHANGED) {
+      return;
+    }
+    final Player player = Bukkit.getPlayer(uuid);
+    if (player == null || !player.isOnline()) {
+      return;
+    }
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      updatePermissibleBase(player);
+      Bukkit.getScheduler().runTask(plugin, player::updateCommands);
+    });
   }
 }
