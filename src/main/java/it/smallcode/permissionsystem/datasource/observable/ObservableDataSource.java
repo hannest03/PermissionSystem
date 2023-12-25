@@ -54,6 +54,14 @@ public class ObservableDataSource implements PermissionDataSource {
   }
 
   @Override
+  public void removePlayerGroup(UUID uuid, Group group) {
+    dataSource.removePlayerGroup(uuid, group);
+
+    notify(PermissionEventType.PLAYER_PERMISSION_CHANGED, uuid);
+    notify(PermissionEventType.PLAYER_GROUP_CHANGED, uuid);
+  }
+
+  @Override
   public Set<PermissionInfo> getPlayerPermissions(UUID uuid) {
     return dataSource.getPlayerPermissions(uuid);
   }

@@ -41,6 +41,10 @@ public class PermissionManager {
     dataSource.addPlayerGroup(uuid, group, instant);
   }
 
+  public void removePlayerGroup(UUID uuid, Group group) {
+    dataSource.removePlayerGroup(uuid, group);
+  }
+
   public void createGroup(Group group) {
     if (group == null) {
       return;

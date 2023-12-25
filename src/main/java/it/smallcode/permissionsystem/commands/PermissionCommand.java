@@ -97,6 +97,7 @@ public class PermissionCommand implements CommandExecutor {
       final String playerName = args[2];
       final String groupName = args[3];
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        // TODO: Check if player already has group
         Group group = permissionManager.getGroupByName(groupName);
         if (group == null) {
           //TODO: add translation
@@ -110,6 +111,28 @@ public class PermissionCommand implements CommandExecutor {
 
         //TODO: add translation
         sender.sendMessage(playerName + " zu Gruppe " + groupName + " hinzugefügt!");
+      });
+    } else if (args[1].equalsIgnoreCase("remove")) {
+      if (args.length != 4) {
+        sender.sendMessage("/permission player remove <name> <group>");
+        return;
+      }
+      final String playerName = args[2];
+      final String groupName = args[3];
+      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Group group = permissionManager.getGroupByName(groupName);
+        if (group == null) {
+          //TODO: add translation
+          sender.sendMessage("Diese Gruppe existiert nicht!");
+          return;
+        }
+
+        //TODO: replace with UUID Fetcher
+        Player player = Bukkit.getPlayer(playerName);
+        permissionManager.removePlayerGroup(player.getUniqueId(), group);
+
+        //TODO: add translation
+        sender.sendMessage(playerName + " von Gruppe " + groupName + " entfernt!");
       });
     }
   }

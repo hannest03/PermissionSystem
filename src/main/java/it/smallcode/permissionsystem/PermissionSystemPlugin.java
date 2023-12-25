@@ -62,7 +62,6 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
   @Override
   public void onDisable() {
-
     try {
       database.disconnect();
     } catch (SQLException e) {

@@ -93,6 +93,17 @@ public class SQLQueryBuilder {
     return "INSERT INTO " + table + "(" + fieldString + ") VALUES (" + valueString + ");";
   }
 
+  public String delete() {
+    StringBuilder query = new StringBuilder();
+    query.append("DELETE FROM ").append(table);
+
+    if (whereCondition != null) {
+      query.append(" WHERE ").append(whereCondition.get());
+    }
+
+    return query.toString();
+  }
+
   private class Join {
 
     private final String table;

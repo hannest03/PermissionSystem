@@ -153,6 +153,25 @@ public class MySQLDataSource implements PermissionDataSource {
   }
 
   @Override
+  public void removePlayerGroup(UUID uuid, Group group) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
+        .where(new AndCondition(
+            new BaseCondition("id_player = ?"),
+            new BaseCondition("id_group = ?")
+        ));
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.delete())) {
+      statement.setString(1, uuid.toString());
+      statement.setInt(2, group.getId());
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
   public Set<PermissionInfo> getPlayerPermissions(UUID uuid) {
     SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
         .field("permission")

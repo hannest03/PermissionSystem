@@ -22,6 +22,8 @@ public interface PermissionDataSource {
 
   void addPlayerGroup(UUID uuid, Group group, Instant end);
 
+  void removePlayerGroup(UUID uuid, Group group);
+
   Set<PermissionInfo> getPlayerPermissions(UUID uuid);
 
 }
