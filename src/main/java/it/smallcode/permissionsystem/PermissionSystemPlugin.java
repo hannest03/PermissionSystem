@@ -3,6 +3,7 @@ package it.smallcode.permissionsystem;
 import it.smallcode.permissionsystem.database.MySQLDatabase;
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
+import it.smallcode.permissionsystem.handler.ChatMessageHandler;
 import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.permissions.PermissionManager;
@@ -43,6 +44,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
         permissibleBaseUtils);
 
     new JoinMessageHandler(this, permissionManager);
+    new ChatMessageHandler(this, permissionManager);
   }
 
   @Override

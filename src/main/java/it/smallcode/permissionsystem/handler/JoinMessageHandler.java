@@ -2,6 +2,7 @@ package it.smallcode.permissionsystem.handler;
 
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.permissions.PermissionManager;
+import it.smallcode.permissionsystem.utils.BukkitBroadcast;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -37,9 +38,8 @@ public class JoinMessageHandler implements Listener {
       String joinMessage = "%player%&7 joined the game";
       final String message = joinMessage.replaceAll("%player%",
           group.getPrefix() + player.getName());
-      Bukkit.getScheduler().runTask(plugin, () -> {
-        Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
+
+      BukkitBroadcast.broadcast(ChatColor.translateAlternateColorCodes('&', message));
     });
   }
 
