@@ -80,7 +80,44 @@ public class MySQLDataSource implements PermissionDataSource {
     }
     return null;
   }
-  
+
+  @Override
+  public List<Group> getPlayerGroups(UUID uuid) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
+        .join(GROUP_TABLE,
+            new BaseCondition(GROUP_TABLE + ".id = " + PLAYER_GROUPS_TABLE + ".id_group"))
+        .field(GROUP_TABLE + ".*")
+        .where(new BaseCondition(PLAYER_GROUPS_TABLE + ".id_player = ?"))
+        .order("priority DESC");
+
+    try (PreparedStatement statement = database.getConnection().prepareStatement(
+        queryBuilder.select())) {
+      statement.setString(1, uuid.toString());
+
+      ResultSet resultSet = statement.executeQuery();
+
+      List<Group> groups = new LinkedList<>();
+      while (resultSet.next()) {
+        groups.add(convertRowToGroup(resultSet));
+      }
+
+      resultSet.close();
+      return groups;
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return null;
+  }
+
+  @Override
+  public Group getPrimaryGroup(UUID uuid) {
+    List<Group> groups = this.getPlayerGroups(uuid);
+    if (groups == null || groups.isEmpty()) {
+      return null;
+    }
+    return groups.get(0);
+  }
+
   @Override
   public Set<PermissionInfo> getPlayerPermissions(UUID uuid) {
     SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)

@@ -12,6 +12,10 @@ public interface PermissionDataSource {
 
   List<Group> getGroups();
 
+  List<Group> getPlayerGroups(UUID uuid);
+
+  Group getPrimaryGroup(UUID uuid);
+
   Set<PermissionInfo> getPlayerPermissions(UUID uuid);
 
   Group getDefaultGroup();

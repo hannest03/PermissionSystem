@@ -14,6 +14,7 @@ public class SQLQueryBuilder {
   private Integer limit = null;
 
   private final List<Join> joins = new LinkedList<>();
+  private final List<String> orders = new LinkedList<>();
 
   public SQLQueryBuilder(String table) {
     this.table = table;
@@ -39,6 +40,11 @@ public class SQLQueryBuilder {
     return this;
   }
 
+  public SQLQueryBuilder order(String order) {
+    orders.add(order);
+    return this;
+  }
+
   public String select() {
     StringBuilder query = new StringBuilder();
     query.append("SELECT ");
@@ -53,6 +59,10 @@ public class SQLQueryBuilder {
 
     if (whereCondition != null) {
       query.append(" WHERE ").append(whereCondition.get());
+    }
+
+    if (!orders.isEmpty()) {
+      query.append(" ORDER BY ").append(String.join(",", orders));
     }
 
     if (limit != null && limit >= 0) {

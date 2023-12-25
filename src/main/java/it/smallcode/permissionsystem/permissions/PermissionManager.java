@@ -23,6 +23,10 @@ public class PermissionManager {
     }
   }
 
+  public Group getPrimaryGroup(UUID uuid) {
+    return dataSource.getPrimaryGroup(uuid);
+  }
+
   public void createGroup(Group group) {
     if (group == null) {
       return;
