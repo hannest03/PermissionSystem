@@ -1,13 +1,10 @@
 package it.smallcode.permissionsystem.manager;
 
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventObserver;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventType;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.models.PlayerGroup;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -15,8 +12,6 @@ import java.util.UUID;
 public class PermissionManager {
 
   private final PermissionDataSource dataSource;
-
-  private Set<PermissionEventObserver> permissionEventObservers = new HashSet<>();
 
   public PermissionManager(PermissionDataSource dataSource) {
     this.dataSource = dataSource;
@@ -43,10 +38,7 @@ public class PermissionManager {
   }
 
   public void addPlayerGroup(UUID uuid, Group group, Instant instant) {
-    dataSource.addGroup(uuid, group, instant);
-
-    notify(PermissionEventType.PLAYER_PERMISSION_CHANGED, uuid);
-    notify(PermissionEventType.PLAYER_GROUP_CHANGED, uuid);
+    dataSource.addPlayerGroup(uuid, group, instant);
   }
 
   public void createGroup(Group group) {
@@ -71,19 +63,5 @@ public class PermissionManager {
 
   public Set<PermissionInfo> getPlayerPermissions(UUID uuid) {
     return dataSource.getPlayerPermissions(uuid);
-  }
-
-  public void subscribe(PermissionEventObserver observer) {
-    permissionEventObservers.add(observer);
-  }
-
-  public void unsubscribe(PermissionEventObserver observer) {
-    permissionEventObservers.remove(observer);
-  }
-
-  private void notify(PermissionEventType eventType, UUID uuid) {
-    for (PermissionEventObserver observer : permissionEventObservers) {
-      observer.onEvent(eventType, uuid);
-    }
   }
 }

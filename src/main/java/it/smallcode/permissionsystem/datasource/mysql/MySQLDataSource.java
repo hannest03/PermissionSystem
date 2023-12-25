@@ -128,7 +128,7 @@ public class MySQLDataSource implements PermissionDataSource {
   }
 
   @Override
-  public void addGroup(UUID uuid, Group group, Instant end) {
+  public void addPlayerGroup(UUID uuid, Group group, Instant end) {
     SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_GROUPS_TABLE)
         .field("id_player")
         .field("id_group");
@@ -145,7 +145,7 @@ public class MySQLDataSource implements PermissionDataSource {
       if (end != null) {
         statement.setTimestamp(3, Timestamp.from(end));
       }
-      
+
       statement.executeUpdate();
     } catch (SQLException ex) {
       ex.printStackTrace();

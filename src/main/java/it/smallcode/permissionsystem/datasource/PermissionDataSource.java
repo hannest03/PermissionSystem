@@ -20,7 +20,7 @@ public interface PermissionDataSource {
 
   Group getPrimaryGroup(UUID uuid);
 
-  void addGroup(UUID uuid, Group group, Instant end);
+  void addPlayerGroup(UUID uuid, Group group, Instant end);
 
   Set<PermissionInfo> getPlayerPermissions(UUID uuid);
 

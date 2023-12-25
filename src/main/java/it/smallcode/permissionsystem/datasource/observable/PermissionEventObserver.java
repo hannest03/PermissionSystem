@@ -1,4 +1,4 @@
-package it.smallcode.permissionsystem.manager.observer;
+package it.smallcode.permissionsystem.datasource.observable;
 
 import java.util.UUID;
 

@@ -4,6 +4,7 @@ import it.smallcode.permissionsystem.commands.PermissionCommand;
 import it.smallcode.permissionsystem.database.MySQLDatabase;
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
+import it.smallcode.permissionsystem.datasource.observable.ObservableDataSource;
 import it.smallcode.permissionsystem.handler.ChatMessageHandler;
 import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
@@ -38,7 +39,9 @@ public class PermissionSystemPlugin extends JavaPlugin {
     }
 
     PermissionDataSource permissionDataSource = new MySQLDataSource(database);
-    permissionManager = new PermissionManager(permissionDataSource);
+    ObservableDataSource observableDataSource = new ObservableDataSource(permissionDataSource);
+
+    permissionManager = new PermissionManager(observableDataSource);
     permissionManager.init();
 
     PermissibleBaseUtils permissibleBaseUtils = new CraftBukkitPermissibleBaseUtils();
@@ -53,14 +56,12 @@ public class PermissionSystemPlugin extends JavaPlugin {
     Bukkit.getPluginCommand("permission")
         .setExecutor(new PermissionCommand(this, permissionManager));
 
-    permissionManager.subscribe(permissibleBaseHandler);
-    permissionManager.subscribe(sidebarHandler);
+    observableDataSource.subscribe(permissibleBaseHandler);
+    observableDataSource.subscribe(sidebarHandler);
   }
 
   @Override
   public void onDisable() {
-    permissionManager.unsubscribe(permissibleBaseHandler);
-    permissionManager.unsubscribe(sidebarHandler);
 
     try {
       database.disconnect();

@@ -1,9 +1,9 @@
 package it.smallcode.permissionsystem.handler;
 
+import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
+import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.handler.permissible.PlayerPermissibleBase;
 import it.smallcode.permissionsystem.manager.PermissionManager;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventObserver;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventType;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.permissions.OptimizedPermissions;
 import it.smallcode.permissionsystem.permissions.PermissionChecker;

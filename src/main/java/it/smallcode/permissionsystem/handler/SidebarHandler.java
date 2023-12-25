@@ -1,9 +1,9 @@
 package it.smallcode.permissionsystem.handler;
 
 import fr.mrmicky.fastboard.FastBoard;
+import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
+import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.manager.PermissionManager;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventObserver;
-import it.smallcode.permissionsystem.manager.observer.PermissionEventType;
 import it.smallcode.permissionsystem.models.Group;
 import java.util.HashMap;
 import java.util.Map;
