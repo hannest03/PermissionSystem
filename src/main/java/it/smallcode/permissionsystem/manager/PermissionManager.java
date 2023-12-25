@@ -1,4 +1,4 @@
-package it.smallcode.permissionsystem.permissions;
+package it.smallcode.permissionsystem.manager;
 
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.models.Group;

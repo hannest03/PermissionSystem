@@ -1,7 +1,7 @@
 package it.smallcode.permissionsystem.handler;
 
+import it.smallcode.permissionsystem.manager.PermissionManager;
 import it.smallcode.permissionsystem.models.Group;
-import it.smallcode.permissionsystem.permissions.PermissionManager;
 import it.smallcode.permissionsystem.utils.BukkitBroadcast;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

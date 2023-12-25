@@ -1,9 +1,10 @@
 package it.smallcode.permissionsystem.handler;
 
+import it.smallcode.permissionsystem.handler.permissible.PlayerPermissibleBase;
+import it.smallcode.permissionsystem.manager.PermissionManager;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.permissions.OptimizedPermissions;
 import it.smallcode.permissionsystem.permissions.PermissionChecker;
-import it.smallcode.permissionsystem.permissions.PermissionManager;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.util.HashMap;
 import java.util.Set;

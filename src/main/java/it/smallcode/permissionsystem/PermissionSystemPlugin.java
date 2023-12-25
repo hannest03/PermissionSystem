@@ -6,7 +6,11 @@ import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
 import it.smallcode.permissionsystem.handler.ChatMessageHandler;
 import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
-import it.smallcode.permissionsystem.permissions.PermissionManager;
+import it.smallcode.permissionsystem.handler.SidebarHandler;
+import it.smallcode.permissionsystem.listeners.JoinListener;
+import it.smallcode.permissionsystem.listeners.QuitListener;
+import it.smallcode.permissionsystem.manager.PermissionManager;
+import it.smallcode.permissionsystem.manager.ScoreboardManager;
 import it.smallcode.permissionsystem.utils.CraftBukkitPermissibleBaseUtils;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.sql.SQLException;
@@ -20,6 +24,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
   private PermissionManager permissionManager;
 
   private PermissibleBaseHandler permissibleBaseHandler;
+  private SidebarHandler scoreboardHandler;
 
   @Override
   public void onEnable() {
@@ -38,13 +43,20 @@ public class PermissionSystemPlugin extends JavaPlugin {
     permissionManager = new PermissionManager(permissionDataSource);
     permissionManager.init();
 
+    ScoreboardManager scoreboardManager = new ScoreboardManager();
+
     PermissibleBaseUtils permissibleBaseUtils = new CraftBukkitPermissibleBaseUtils();
 
     permissibleBaseHandler = new PermissibleBaseHandler(this, permissionManager,
         permissibleBaseUtils);
+    scoreboardHandler = new SidebarHandler(this, permissionManager, scoreboardManager);
 
     new JoinMessageHandler(this, permissionManager);
     new ChatMessageHandler(this, permissionManager);
+
+    Bukkit.getPluginManager().registerEvents(new JoinListener(scoreboardManager), this);
+    Bukkit.getPluginManager().registerEvents(new QuitListener(scoreboardManager), this);
+
   }
 
   @Override
