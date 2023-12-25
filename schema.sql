@@ -25,3 +25,11 @@ CREATE TABLE permissions (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+CREATE TABLE signs (
+    world VARCHAR(50) NOT NULL,
+    x INT NOT NULL,
+    y INT NOT NULL,
+    z INT NOT NULL,
+    PRIMARY KEY (world, x, y, z)
+);

@@ -1,11 +1,15 @@
 package it.smallcode.permissionsystem.commands;
 
 import it.smallcode.permissionsystem.manager.PermissionManager;
+import it.smallcode.permissionsystem.manager.SignManager;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PlayerGroup;
+import it.smallcode.permissionsystem.models.adapter.SignLocationAdapter;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,10 +20,15 @@ public class PermissionCommand implements CommandExecutor {
 
   private final Plugin plugin;
   private final PermissionManager permissionManager;
+  private final SignManager signManager;
 
-  public PermissionCommand(Plugin plugin, PermissionManager permissionManager) {
+  private final SignLocationAdapter signLocationAdapter = new SignLocationAdapter();
+
+  public PermissionCommand(Plugin plugin, PermissionManager permissionManager,
+      SignManager signManager) {
     this.plugin = plugin;
     this.permissionManager = permissionManager;
+    this.signManager = signManager;
   }
 
   @Override
@@ -48,6 +57,7 @@ public class PermissionCommand implements CommandExecutor {
       switch (type) {
         case "group" -> handleGroupCommand(sender, args);
         case "player" -> handlePlayerCommand(sender, args);
+        case "sign" -> handleSignCommand(sender, args);
       }
     }
     return false;
@@ -136,4 +146,39 @@ public class PermissionCommand implements CommandExecutor {
       });
     }
   }
+
+  private void handleSignCommand(CommandSender sender, String[] args) {
+    if (!(sender instanceof Player)) {
+      //TODO: add translation
+      sender.sendMessage("Dieses Kommando ist nur für Spieler!");
+      return;
+    }
+    if (args.length == 1) {
+      sender.sendMessage("/permission sign add");
+      sender.sendMessage("/permission sign remove");
+      return;
+    }
+
+    final Player player = (Player) sender;
+    if (args[1].equalsIgnoreCase("add")) {
+      final Block block = player.getTargetBlockExact(4);
+      if (block == null || block.getType() != Material.OAK_SIGN) {
+        player.sendMessage("Du musst auf ein Schild aus Eiche schauen!");
+        return;
+      }
+      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        signManager.addSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
+      });
+    } else if (args[1].equalsIgnoreCase("remove")) {
+      final Block block = player.getTargetBlockExact(4);
+      if (block == null || block.getType() != Material.OAK_SIGN) {
+        player.sendMessage("Du musst auf ein Schild aus Eiche schauen!");
+        return;
+      }
+      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        signManager.removeSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
+      });
+    }
+  }
+
 }

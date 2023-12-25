@@ -2,14 +2,17 @@ package it.smallcode.permissionsystem;
 
 import it.smallcode.permissionsystem.commands.PermissionCommand;
 import it.smallcode.permissionsystem.database.MySQLDatabase;
-import it.smallcode.permissionsystem.datasource.PermissionDataSource;
+import it.smallcode.permissionsystem.datasource.cache.CacheSignDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
-import it.smallcode.permissionsystem.datasource.observable.ObservableDataSource;
+import it.smallcode.permissionsystem.datasource.observable.ObservablePermissionDataSource;
+import it.smallcode.permissionsystem.datasource.observable.ObservableSignDataSource;
 import it.smallcode.permissionsystem.handler.ChatMessageHandler;
 import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
+import it.smallcode.permissionsystem.handler.SignHandler;
 import it.smallcode.permissionsystem.manager.PermissionManager;
+import it.smallcode.permissionsystem.manager.SignManager;
 import it.smallcode.permissionsystem.utils.CraftBukkitPermissibleBaseUtils;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.sql.SQLException;
@@ -19,11 +22,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PermissionSystemPlugin extends JavaPlugin {
 
   private MySQLDatabase database;
-
-  private PermissionManager permissionManager;
-
-  private PermissibleBaseHandler permissibleBaseHandler;
-  private SidebarHandler sidebarHandler;
 
   @Override
   public void onEnable() {
@@ -38,26 +36,36 @@ public class PermissionSystemPlugin extends JavaPlugin {
       return;
     }
 
-    PermissionDataSource permissionDataSource = new MySQLDataSource(database);
-    ObservableDataSource observableDataSource = new ObservableDataSource(permissionDataSource);
+    MySQLDataSource dataSource = new MySQLDataSource(database);
+    ObservablePermissionDataSource observableDataSource = new ObservablePermissionDataSource(
+        dataSource);
 
-    permissionManager = new PermissionManager(observableDataSource);
+    PermissionManager permissionManager = new PermissionManager(observableDataSource);
     permissionManager.init();
+
+    ObservableSignDataSource observableSignDataSource = new ObservableSignDataSource(
+        new CacheSignDataSource(dataSource));
+    SignManager signManager = new SignManager(observableSignDataSource);
 
     PermissibleBaseUtils permissibleBaseUtils = new CraftBukkitPermissibleBaseUtils();
 
-    permissibleBaseHandler = new PermissibleBaseHandler(this, permissionManager,
+    PermissibleBaseHandler permissibleBaseHandler = new PermissibleBaseHandler(this,
+        permissionManager,
         permissibleBaseUtils);
-    sidebarHandler = new SidebarHandler(this, permissionManager);
+    SidebarHandler sidebarHandler = new SidebarHandler(this, permissionManager);
+    SignHandler signHandler = new SignHandler(this, permissionManager, signManager);
 
     new JoinMessageHandler(this, permissionManager);
     new ChatMessageHandler(this, permissionManager);
 
     Bukkit.getPluginCommand("permission")
-        .setExecutor(new PermissionCommand(this, permissionManager));
+        .setExecutor(new PermissionCommand(this, permissionManager, signManager));
 
     observableDataSource.subscribe(permissibleBaseHandler);
     observableDataSource.subscribe(sidebarHandler);
+    observableDataSource.subscribe(signHandler);
+
+    observableSignDataSource.subscribe(signHandler);
   }
 
   @Override

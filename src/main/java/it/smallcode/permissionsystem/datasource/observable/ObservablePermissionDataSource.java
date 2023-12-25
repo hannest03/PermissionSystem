@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class ObservableDataSource implements PermissionDataSource {
+public class ObservablePermissionDataSource implements PermissionDataSource {
 
   private final PermissionDataSource dataSource;
 
   private Set<PermissionEventObserver> observers = new HashSet<>();
 
-  public ObservableDataSource(PermissionDataSource dataSource) {
+  public ObservablePermissionDataSource(PermissionDataSource dataSource) {
     this.dataSource = dataSource;
   }
 

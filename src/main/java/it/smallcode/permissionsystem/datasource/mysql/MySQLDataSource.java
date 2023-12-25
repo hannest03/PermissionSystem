@@ -2,6 +2,7 @@ package it.smallcode.permissionsystem.datasource.mysql;
 
 import it.smallcode.permissionsystem.database.MySQLDatabase;
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
+import it.smallcode.permissionsystem.datasource.SignDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.builder.SQLQueryBuilder;
 import it.smallcode.permissionsystem.datasource.mysql.builder.condition.AndCondition;
 import it.smallcode.permissionsystem.datasource.mysql.builder.condition.BaseCondition;
@@ -9,6 +10,7 @@ import it.smallcode.permissionsystem.datasource.mysql.builder.condition.OrCondit
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.models.PlayerGroup;
+import it.smallcode.permissionsystem.models.SignLocation;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,11 +22,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MySQLDataSource implements PermissionDataSource {
+public class MySQLDataSource implements PermissionDataSource, SignDataSource {
 
   public static final String GROUP_TABLE = "groups";
   public static final String PERMISSIONS_TABLE = "permissions";
   public static final String PLAYER_GROUPS_TABLE = "playergroups";
+
+  public static final String SIGN_TABLE = "signs";
 
   private final MySQLDatabase database;
 
@@ -241,5 +245,118 @@ public class MySQLDataSource implements PermissionDataSource {
     group.setDefault(resultSet.getBoolean("is_default"));
 
     return group;
+  }
+
+  @Override
+  public Set<SignLocation> getSignLocations() {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(SIGN_TABLE)
+        .field("*");
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.select())) {
+      ResultSet resultSet = statement.executeQuery();
+      Set<SignLocation> locations = new HashSet<>();
+      while (resultSet.next()) {
+        locations.add(new SignLocation(
+            resultSet.getString("world"),
+            resultSet.getInt("x"),
+            resultSet.getInt("y"),
+            resultSet.getInt("z")
+        ));
+      }
+      resultSet.close();
+      return locations;
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+
+    return null;
+  }
+
+  @Override
+  public boolean isSignLocation(SignLocation signLocation) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(SIGN_TABLE)
+        .field("COUNT(*) AS count")
+        .where(
+            new AndCondition(
+                new BaseCondition("world = ?"),
+                new AndCondition(
+                    new BaseCondition("x = ?"),
+                    new AndCondition(
+                        new BaseCondition("y = ?"),
+                        new BaseCondition("z = ?")
+                    )
+                )
+            )
+        );
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.select())) {
+      statement.setString(1, signLocation.world());
+      statement.setInt(2, signLocation.x());
+      statement.setInt(3, signLocation.y());
+      statement.setInt(4, signLocation.z());
+
+      ResultSet resultSet = statement.executeQuery();
+      if (!resultSet.next()) {
+        return false;
+      }
+      int count = resultSet.getInt("count");
+      resultSet.close();
+      return count == 1;
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return false;
+  }
+
+  @Override
+  public void addSignLocation(SignLocation signLocation) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(SIGN_TABLE)
+        .field("world")
+        .field("x")
+        .field("y")
+        .field("z");
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.insert())) {
+      statement.setString(1, signLocation.world());
+      statement.setInt(2, signLocation.x());
+      statement.setInt(3, signLocation.y());
+      statement.setInt(4, signLocation.z());
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
+  public void removeSignLocation(SignLocation signLocation) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(SIGN_TABLE)
+        .where(
+            new AndCondition(
+                new BaseCondition("world = ?"),
+                new AndCondition(
+                    new BaseCondition("x = ?"),
+                    new AndCondition(
+                        new BaseCondition("y = ?"),
+                        new BaseCondition("z = ?")
+                    )
+                )
+            )
+        );
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.delete())) {
+      statement.setString(1, signLocation.world());
+      statement.setInt(2, signLocation.x());
+      statement.setInt(3, signLocation.y());
+      statement.setInt(4, signLocation.z());
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
   }
 }
