@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableList;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.datasource.observable.SignEventObserver;
-import it.smallcode.permissionsystem.manager.PermissionManager;
-import it.smallcode.permissionsystem.manager.SignManager;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.SignLocation;
 import it.smallcode.permissionsystem.models.adapter.SignLocationAdapter;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.SignService;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,15 +28,15 @@ import org.bukkit.plugin.Plugin;
 public class SignHandler implements Listener, PermissionEventObserver, SignEventObserver {
 
   private final Plugin plugin;
-  private final PermissionManager permissionManager;
-  private final SignManager signManager;
+  private final PermissionService permissionService;
+  private final SignService signService;
 
   private final SignLocationAdapter signLocationAdapter = new SignLocationAdapter();
 
-  public SignHandler(Plugin plugin, PermissionManager permissionManager, SignManager signManager) {
+  public SignHandler(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
-    this.permissionManager = permissionManager;
-    this.signManager = signManager;
+    this.permissionService = serviceRegistry.getService(PermissionService.class);
+    this.signService = serviceRegistry.getService(SignService.class);
 
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
@@ -44,7 +45,7 @@ public class SignHandler implements Listener, PermissionEventObserver, SignEvent
   public void onJoin(PlayerJoinEvent e) {
     final Player player = e.getPlayer();
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-      Set<SignLocation> locations = signManager.getSignLocations();
+      Set<SignLocation> locations = signService.getSignLocations();
 
       for (SignLocation signLocation : locations) {
         if (player.getWorld().getName().equals(signLocation.world())) {
@@ -63,15 +64,15 @@ public class SignHandler implements Listener, PermissionEventObserver, SignEvent
       }
 
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        if (signManager.isSignLocation(signLocationAdapter.fromLocation(location))) {
-          signManager.removeSignLocation(signLocationAdapter.fromLocation(location));
+        if (signService.isSignLocation(signLocationAdapter.fromLocation(location))) {
+          signService.removeSignLocation(signLocationAdapter.fromLocation(location));
         }
       });
     }
   }
 
   private void updateSign(Player player, SignLocation signLocation) {
-    Group group = permissionManager.getPrimaryGroup(player.getUniqueId());
+    Group group = permissionService.getPrimaryGroup(player.getUniqueId());
 
     // TODO: add translation
 
@@ -99,7 +100,7 @@ public class SignHandler implements Listener, PermissionEventObserver, SignEvent
       }
 
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Set<SignLocation> locations = signManager.getSignLocations();
+        Set<SignLocation> locations = signService.getSignLocations();
 
         for (SignLocation signLocation : locations) {
           if (player.getWorld().getName().equals(signLocation.world())) {

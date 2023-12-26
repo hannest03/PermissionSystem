@@ -1,7 +1,8 @@
 package it.smallcode.permissionsystem.handler;
 
-import it.smallcode.permissionsystem.manager.PermissionManager;
 import it.smallcode.permissionsystem.models.Group;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
 import it.smallcode.permissionsystem.utils.BukkitBroadcast;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,11 +15,11 @@ import org.bukkit.plugin.Plugin;
 public class JoinMessageHandler implements Listener {
 
   private final Plugin plugin;
-  private final PermissionManager permissionManager;
+  private final PermissionService permissionService;
 
-  public JoinMessageHandler(Plugin plugin, PermissionManager permissionManager) {
+  public JoinMessageHandler(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
-    this.permissionManager = permissionManager;
+    this.permissionService = serviceRegistry.getService(PermissionService.class);
 
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
@@ -29,7 +30,7 @@ public class JoinMessageHandler implements Listener {
 
     e.setJoinMessage(null);
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-      Group group = permissionManager.getPrimaryGroup(player.getUniqueId());
+      Group group = permissionService.getPrimaryGroup(player.getUniqueId());
       if (group == null) {
         return;
       }

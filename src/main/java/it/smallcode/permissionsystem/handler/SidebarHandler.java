@@ -3,8 +3,9 @@ package it.smallcode.permissionsystem.handler;
 import fr.mrmicky.fastboard.FastBoard;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
-import it.smallcode.permissionsystem.manager.PermissionManager;
 import it.smallcode.permissionsystem.models.Group;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,13 +20,13 @@ import org.bukkit.plugin.Plugin;
 public class SidebarHandler implements Listener, PermissionEventObserver {
 
   private final Plugin plugin;
-  private final PermissionManager permissionManager;
+  private final PermissionService permissionService;
 
   private final Map<UUID, FastBoard> scoreboards = new HashMap<>();
 
-  public SidebarHandler(Plugin plugin, PermissionManager permissionManager) {
+  public SidebarHandler(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
-    this.permissionManager = permissionManager;
+    this.permissionService = serviceRegistry.getService(PermissionService.class);
 
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
@@ -48,7 +49,7 @@ public class SidebarHandler implements Listener, PermissionEventObserver {
   }
 
   private void updateScoreboard(UUID uuid) {
-    Group group = permissionManager.getPrimaryGroup(uuid);
+    Group group = permissionService.getPrimaryGroup(uuid);
     String groupName = group != null ? group.getName() : "Undefined";
 
     //TODO: add translation

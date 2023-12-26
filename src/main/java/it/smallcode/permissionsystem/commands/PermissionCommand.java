@@ -1,10 +1,11 @@
 package it.smallcode.permissionsystem.commands;
 
-import it.smallcode.permissionsystem.manager.PermissionManager;
-import it.smallcode.permissionsystem.manager.SignManager;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PlayerGroup;
 import it.smallcode.permissionsystem.models.adapter.SignLocationAdapter;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.SignService;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
@@ -19,16 +20,15 @@ import org.bukkit.plugin.Plugin;
 public class PermissionCommand implements CommandExecutor {
 
   private final Plugin plugin;
-  private final PermissionManager permissionManager;
-  private final SignManager signManager;
+  private final PermissionService permissionService;
+  private final SignService signService;
 
   private final SignLocationAdapter signLocationAdapter = new SignLocationAdapter();
 
-  public PermissionCommand(Plugin plugin, PermissionManager permissionManager,
-      SignManager signManager) {
+  public PermissionCommand(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
-    this.permissionManager = permissionManager;
-    this.signManager = signManager;
+    this.permissionService = serviceRegistry.getService(PermissionService.class);
+    this.signService = serviceRegistry.getService(SignService.class);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class PermissionCommand implements CommandExecutor {
       if (sender instanceof Player) {
         Player player = (Player) sender;
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-          List<PlayerGroup> groups = permissionManager.getPlayerGroups(player.getUniqueId());
+          List<PlayerGroup> groups = permissionService.getPlayerGroups(player.getUniqueId());
 
           String groupText = groups.stream().map(group -> {
             String text = group.group().getName();
@@ -79,13 +79,13 @@ public class PermissionCommand implements CommandExecutor {
       }
       final String groupName = args[2];
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionManager.getGroupByName(groupName);
+        Group group = permissionService.getGroupByName(groupName);
         if (group != null) {
           //TODO: add translation
           sender.sendMessage("Diese Gruppe existiert bereits");
           return;
         }
-        permissionManager.createGroup(new Group(groupName, "", 0));
+        permissionService.createGroup(new Group(groupName, "", 0));
 
         //TODO: add translation
         sender.sendMessage("Gruppe " + groupName + " erstellt!");
@@ -108,7 +108,7 @@ public class PermissionCommand implements CommandExecutor {
       final String groupName = args[3];
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
         // TODO: Check if player already has group
-        Group group = permissionManager.getGroupByName(groupName);
+        Group group = permissionService.getGroupByName(groupName);
         if (group == null) {
           //TODO: add translation
           sender.sendMessage("Diese Gruppe existiert nicht!");
@@ -117,7 +117,7 @@ public class PermissionCommand implements CommandExecutor {
 
         //TODO: replace with UUID Fetcher
         Player player = Bukkit.getPlayer(playerName);
-        permissionManager.addPlayerGroup(player.getUniqueId(), group);
+        permissionService.addPlayerGroup(player.getUniqueId(), group);
 
         //TODO: add translation
         sender.sendMessage(playerName + " zu Gruppe " + groupName + " hinzugefügt!");
@@ -130,7 +130,7 @@ public class PermissionCommand implements CommandExecutor {
       final String playerName = args[2];
       final String groupName = args[3];
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionManager.getGroupByName(groupName);
+        Group group = permissionService.getGroupByName(groupName);
         if (group == null) {
           //TODO: add translation
           sender.sendMessage("Diese Gruppe existiert nicht!");
@@ -139,7 +139,7 @@ public class PermissionCommand implements CommandExecutor {
 
         //TODO: replace with UUID Fetcher
         Player player = Bukkit.getPlayer(playerName);
-        permissionManager.removePlayerGroup(player.getUniqueId(), group);
+        permissionService.removePlayerGroup(player.getUniqueId(), group);
 
         //TODO: add translation
         sender.sendMessage(playerName + " von Gruppe " + groupName + " entfernt!");
@@ -167,7 +167,7 @@ public class PermissionCommand implements CommandExecutor {
         return;
       }
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        signManager.addSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
+        signService.addSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
       });
     } else if (args[1].equalsIgnoreCase("remove")) {
       final Block block = player.getTargetBlockExact(4);
@@ -176,7 +176,7 @@ public class PermissionCommand implements CommandExecutor {
         return;
       }
       Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        signManager.removeSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
+        signService.removeSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
       });
     }
   }

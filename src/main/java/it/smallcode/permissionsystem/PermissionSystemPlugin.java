@@ -11,8 +11,11 @@ import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
 import it.smallcode.permissionsystem.handler.SignHandler;
-import it.smallcode.permissionsystem.manager.PermissionManager;
-import it.smallcode.permissionsystem.manager.SignManager;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.SignService;
+import it.smallcode.permissionsystem.services.impl.ImplPermissionService;
+import it.smallcode.permissionsystem.services.impl.ImplSignService;
 import it.smallcode.permissionsystem.utils.CraftBukkitPermissibleBaseUtils;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.sql.SQLException;
@@ -23,10 +26,14 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
   private MySQLDatabase database;
 
+  private ServiceRegistry serviceRegistry;
+
   @Override
   public void onEnable() {
     database = new MySQLDatabase("localhost", 3306, "permissions", "root",
         () -> "");
+
+    serviceRegistry = new ServiceRegistry();
 
     try {
       database.connect();
@@ -40,26 +47,32 @@ public class PermissionSystemPlugin extends JavaPlugin {
     ObservablePermissionDataSource observableDataSource = new ObservablePermissionDataSource(
         dataSource);
 
-    PermissionManager permissionManager = new PermissionManager(observableDataSource);
-    permissionManager.init();
+    PermissionService permissionService = new ImplPermissionService(observableDataSource);
+    permissionService.init();
+
+    serviceRegistry.registerService(PermissionService.class, permissionService);
 
     ObservableSignDataSource observableSignDataSource = new ObservableSignDataSource(
         new CacheSignDataSource(dataSource));
-    SignManager signManager = new SignManager(observableSignDataSource);
+    SignService signService = new ImplSignService(observableSignDataSource);
+
+    serviceRegistry.registerService(SignService.class, signService);
 
     PermissibleBaseUtils permissibleBaseUtils = new CraftBukkitPermissibleBaseUtils();
 
-    PermissibleBaseHandler permissibleBaseHandler = new PermissibleBaseHandler(this,
-        permissionManager,
-        permissibleBaseUtils);
-    SidebarHandler sidebarHandler = new SidebarHandler(this, permissionManager);
-    SignHandler signHandler = new SignHandler(this, permissionManager, signManager);
+    serviceRegistry.registerService(PermissibleBaseUtils.class, permissibleBaseUtils);
 
-    new JoinMessageHandler(this, permissionManager);
-    new ChatMessageHandler(this, permissionManager);
+    PermissibleBaseHandler permissibleBaseHandler = new PermissibleBaseHandler(
+        this,
+        serviceRegistry);
+    SidebarHandler sidebarHandler = new SidebarHandler(this, serviceRegistry);
+    SignHandler signHandler = new SignHandler(this, serviceRegistry);
+
+    new JoinMessageHandler(this, serviceRegistry);
+    new ChatMessageHandler(this, serviceRegistry);
 
     Bukkit.getPluginCommand("permission")
-        .setExecutor(new PermissionCommand(this, permissionManager, signManager));
+        .setExecutor(new PermissionCommand(this, serviceRegistry));
 
     observableDataSource.subscribe(permissibleBaseHandler);
     observableDataSource.subscribe(sidebarHandler);

@@ -3,10 +3,11 @@ package it.smallcode.permissionsystem.handler;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.handler.permissible.PlayerPermissibleBase;
-import it.smallcode.permissionsystem.manager.PermissionManager;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.permissions.OptimizedPermissions;
 import it.smallcode.permissionsystem.permissions.PermissionChecker;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.ServiceRegistry;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.util.HashMap;
 import java.util.Set;
@@ -23,16 +24,15 @@ public class PermissibleBaseHandler implements Listener, PermissionEventObserver
 
   private final Plugin plugin;
 
-  private final PermissionManager permissionManager;
+  private final PermissionService permissionService;
   private final PermissibleBaseUtils permissibleBaseUtils;
 
   private final HashMap<UUID, PlayerPermissibleBase> playerPermissible = new HashMap<>();
 
-  public PermissibleBaseHandler(Plugin plugin, PermissionManager permissionManager,
-      PermissibleBaseUtils permissibleBaseUtils) {
+  public PermissibleBaseHandler(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
-    this.permissionManager = permissionManager;
-    this.permissibleBaseUtils = permissibleBaseUtils;
+    this.permissionService = serviceRegistry.getService(PermissionService.class);
+    this.permissibleBaseUtils = serviceRegistry.getService(PermissibleBaseUtils.class);
 
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
@@ -62,7 +62,7 @@ public class PermissibleBaseHandler implements Listener, PermissionEventObserver
       permissibleBaseUtils.setPermissibleBase(player, permissibleBase);
       playerPermissible.put(player.getUniqueId(), permissibleBase);
     }
-    Set<PermissionInfo> permissionInfos = permissionManager.getPlayerPermissions(
+    Set<PermissionInfo> permissionInfos = permissionService.getPlayerPermissions(
         player.getUniqueId());
     PermissionChecker permissionChecker = new OptimizedPermissions(permissionInfos);
     permissibleBase.setPermissionChecker(permissionChecker);

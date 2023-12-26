@@ -1,19 +1,21 @@
-package it.smallcode.permissionsystem.manager;
+package it.smallcode.permissionsystem.services.impl;
 
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.models.PlayerGroup;
+import it.smallcode.permissionsystem.services.PermissionService;
+import it.smallcode.permissionsystem.services.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class PermissionManager {
+public class ImplPermissionService implements Service, PermissionService {
 
   private final PermissionDataSource dataSource;
 
-  public PermissionManager(PermissionDataSource dataSource) {
+  public ImplPermissionService(PermissionDataSource dataSource) {
     this.dataSource = dataSource;
   }
 

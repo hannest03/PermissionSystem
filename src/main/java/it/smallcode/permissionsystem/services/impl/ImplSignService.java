@@ -1,14 +1,16 @@
-package it.smallcode.permissionsystem.manager;
+package it.smallcode.permissionsystem.services.impl;
 
 import it.smallcode.permissionsystem.datasource.SignDataSource;
 import it.smallcode.permissionsystem.models.SignLocation;
+import it.smallcode.permissionsystem.services.Service;
+import it.smallcode.permissionsystem.services.SignService;
 import java.util.Set;
 
-public class SignManager {
+public class ImplSignService implements Service, SignService {
 
   private final SignDataSource dataSource;
 
-  public SignManager(SignDataSource dataSource) {
+  public ImplSignService(SignDataSource dataSource) {
     this.dataSource = dataSource;
   }
 
