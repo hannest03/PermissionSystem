@@ -1,4 +1,4 @@
-package it.smallcode.permissionsystem.permissions;
+package it.smallcode.permissionsystem.handler.permissible;
 
 public interface PermissionChecker {
 

@@ -1,6 +1,5 @@
 package it.smallcode.permissionsystem.handler.permissible;
 
-import it.smallcode.permissionsystem.permissions.PermissionChecker;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.Permission;

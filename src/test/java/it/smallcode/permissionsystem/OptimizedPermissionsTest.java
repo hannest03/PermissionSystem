@@ -1,7 +1,7 @@
 package it.smallcode.permissionsystem;
 
+import it.smallcode.permissionsystem.handler.permissible.OptimizedPermissions;
 import it.smallcode.permissionsystem.models.PermissionInfo;
-import it.smallcode.permissionsystem.permissions.OptimizedPermissions;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;

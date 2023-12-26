@@ -1,4 +1,4 @@
-package it.smallcode.permissionsystem.permissions;
+package it.smallcode.permissionsystem.handler.permissible;
 
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import java.util.HashMap;
