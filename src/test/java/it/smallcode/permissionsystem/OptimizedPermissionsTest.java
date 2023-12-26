@@ -13,8 +13,8 @@ public class OptimizedPermissionsTest {
   public void testOptimizer() {
     {
       Set<PermissionInfo> permissionInfos = new HashSet<>();
-      permissionInfos.add(new PermissionInfo("test", 0));
-      permissionInfos.add(new PermissionInfo("-test2", 1));
+      permissionInfos.add(new PermissionInfo("test", 1));
+      permissionInfos.add(new PermissionInfo("-test2", 0));
 
       OptimizedPermissions optimizedPermissions = new OptimizedPermissions(permissionInfos);
       Assertions.assertTrue(optimizedPermissions.getPermissions().get("test"));
@@ -22,16 +22,16 @@ public class OptimizedPermissionsTest {
     }
     {
       Set<PermissionInfo> permissionInfos = new HashSet<>();
-      permissionInfos.add(new PermissionInfo("test", 0));
-      permissionInfos.add(new PermissionInfo("-test", 1));
+      permissionInfos.add(new PermissionInfo("test", 1));
+      permissionInfos.add(new PermissionInfo("-test", 0));
 
       OptimizedPermissions optimizedPermissions = new OptimizedPermissions(permissionInfos);
       Assertions.assertFalse(optimizedPermissions.getPermissions().get("test"));
     }
     {
       Set<PermissionInfo> permissionInfos = new HashSet<>();
-      permissionInfos.add(new PermissionInfo("test", 1));
-      permissionInfos.add(new PermissionInfo("-test", 0));
+      permissionInfos.add(new PermissionInfo("test", 0));
+      permissionInfos.add(new PermissionInfo("-test", 1));
 
       OptimizedPermissions optimizedPermissions = new OptimizedPermissions(permissionInfos);
       Assertions.assertTrue(optimizedPermissions.getPermissions().get("test"));
@@ -59,8 +59,8 @@ public class OptimizedPermissionsTest {
     }
     {
       Set<PermissionInfo> permissionInfos = new HashSet<>();
-      permissionInfos.add(new PermissionInfo("test", 0));
-      permissionInfos.add(new PermissionInfo("-test", 1));
+      permissionInfos.add(new PermissionInfo("test", 1));
+      permissionInfos.add(new PermissionInfo("-test", 0));
 
       OptimizedPermissions optimizedPermissions = new OptimizedPermissions(permissionInfos);
       Assertions.assertFalse(optimizedPermissions.hasPermission("test"));

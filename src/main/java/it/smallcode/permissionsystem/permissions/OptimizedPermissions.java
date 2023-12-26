@@ -10,7 +10,7 @@ public class OptimizedPermissions implements PermissionChecker {
 
   public OptimizedPermissions(Set<PermissionInfo> permissionInfos) {
     permissionInfos.stream().sorted((info1, info2) -> {
-      int priorityCompare = Integer.compare(info2.priority(), info1.priority());
+      int priorityCompare = Integer.compare(info1.priority(), info2.priority());
       if (priorityCompare != 0) {
         return priorityCompare;
       }

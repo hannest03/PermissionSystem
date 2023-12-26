@@ -21,7 +21,7 @@ public class ImplPermissionService implements Service, PermissionService {
 
   public void init() {
     if (dataSource.getDefaultGroup() == null) {
-      Group group = new Group("Default", "&8", 0);
+      Group group = new Group("Default", "&8", 1000);
       group.setDefault(true);
       dataSource.createGroup(group);
     }

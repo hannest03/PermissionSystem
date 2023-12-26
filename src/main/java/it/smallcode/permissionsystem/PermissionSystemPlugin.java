@@ -11,6 +11,7 @@ import it.smallcode.permissionsystem.handler.JoinMessageHandler;
 import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
 import it.smallcode.permissionsystem.handler.SignHandler;
+import it.smallcode.permissionsystem.handler.TablistHandler;
 import it.smallcode.permissionsystem.services.PermissionService;
 import it.smallcode.permissionsystem.services.ServiceRegistry;
 import it.smallcode.permissionsystem.services.SignService;
@@ -67,6 +68,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
         serviceRegistry);
     SidebarHandler sidebarHandler = new SidebarHandler(this, serviceRegistry);
     SignHandler signHandler = new SignHandler(this, serviceRegistry);
+    TablistHandler tablistHandler = new TablistHandler(this, serviceRegistry);
 
     new JoinMessageHandler(this, serviceRegistry);
     new ChatMessageHandler(this, serviceRegistry);
@@ -77,7 +79,8 @@ public class PermissionSystemPlugin extends JavaPlugin {
     observableDataSource.subscribe(permissibleBaseHandler);
     observableDataSource.subscribe(sidebarHandler);
     observableDataSource.subscribe(signHandler);
-
+    observableDataSource.subscribe(tablistHandler);
+    
     observableSignDataSource.subscribe(signHandler);
   }
 

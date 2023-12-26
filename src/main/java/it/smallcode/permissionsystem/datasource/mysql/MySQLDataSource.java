@@ -96,7 +96,7 @@ public class MySQLDataSource implements PermissionDataSource, SignDataSource {
         .field(GROUP_TABLE + ".*")
         .field(PLAYER_GROUPS_TABLE + ".end_date")
         .where(new BaseCondition(PLAYER_GROUPS_TABLE + ".id_player = ?"))
-        .order("priority DESC");
+        .order("priority ASC");
 
     try (PreparedStatement statement = database.getConnection().prepareStatement(
         queryBuilder.select())) {
