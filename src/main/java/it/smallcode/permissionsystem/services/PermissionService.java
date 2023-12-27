@@ -26,6 +26,8 @@ public interface PermissionService extends Service {
 
   Group getGroupByName(String name);
 
+  Group getDefaultGroup();
+
   List<Group> getGroups();
 
   Set<PermissionInfo> getPlayerPermissions(UUID uuid);

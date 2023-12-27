@@ -12,6 +12,7 @@ import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
 import it.smallcode.permissionsystem.handler.SignHandler;
 import it.smallcode.permissionsystem.handler.TablistHandler;
+import it.smallcode.permissionsystem.listeners.AsyncPreLoginListener;
 import it.smallcode.permissionsystem.services.PermissionService;
 import it.smallcode.permissionsystem.services.ServiceRegistry;
 import it.smallcode.permissionsystem.services.SignService;
@@ -72,6 +73,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
     new JoinMessageHandler(this, serviceRegistry);
     new ChatMessageHandler(this, serviceRegistry);
+    new AsyncPreLoginListener(this, serviceRegistry);
 
     Bukkit.getPluginCommand("permission")
         .setExecutor(new PermissionCommand(this, serviceRegistry));
@@ -80,7 +82,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
     observableDataSource.subscribe(sidebarHandler);
     observableDataSource.subscribe(signHandler);
     observableDataSource.subscribe(tablistHandler);
-    
+
     observableSignDataSource.subscribe(signHandler);
   }
 

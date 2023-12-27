@@ -56,6 +56,9 @@ public class SidebarHandler implements Listener, PermissionEventObserver {
     final String title = "Permission System";
 
     FastBoard scoreboard = scoreboards.get(uuid);
+    if (scoreboard == null) {
+      return;
+    }
     scoreboard.updateTitle(title);
     scoreboard.updateLines(groupName);
   }

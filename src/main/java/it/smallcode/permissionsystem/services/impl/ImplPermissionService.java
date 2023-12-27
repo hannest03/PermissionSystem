@@ -45,6 +45,14 @@ public class ImplPermissionService implements Service, PermissionService {
 
   public void removePlayerGroup(UUID uuid, Group group) {
     dataSource.removePlayerGroup(uuid, group);
+    List<PlayerGroup> groups = getPlayerGroups(uuid);
+    if (groups == null || groups.isEmpty()) {
+      Group defaultGroup = getDefaultGroup();
+      if (defaultGroup == null) {
+        return;
+      }
+      addPlayerGroup(uuid, defaultGroup);
+    }
   }
 
   public void createGroup(Group group) {
@@ -61,6 +69,10 @@ public class ImplPermissionService implements Service, PermissionService {
       }
     }
     return null;
+  }
+
+  public Group getDefaultGroup() {
+    return dataSource.getDefaultGroup();
   }
 
   public List<Group> getGroups() {
