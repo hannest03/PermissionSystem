@@ -11,18 +11,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 
-public class DefaultSubCommand extends PermissionBaseSubCommand {
+public class InfoSubCommand extends PermissionBaseSubCommand {
 
   private static final String GROUP_DOES_NOT_EXIST = "group_does_not_exist";
-  private static final String GROUP_ALREADY_DEFAULT = "group_already_default";
-  private static final String GROUP_CHANGED_DEFAULT = "group_changed_default";
+  private static final String GROUP_INFO = "group_info";
 
   private final Plugin plugin;
   private final PermissionService permissionService;
 
-  public DefaultSubCommand(Plugin plugin, ServiceRegistry serviceRegistry) {
-    super("default", "default <group>", serviceRegistry, "permission.group.default");
-
+  public InfoSubCommand(Plugin plugin, ServiceRegistry serviceRegistry) {
+    super("info", "info <group>", serviceRegistry, "permission.group.info");
     this.plugin = plugin;
     this.permissionService = serviceRegistry.getService(PermissionService.class);
   }
@@ -43,21 +41,14 @@ public class DefaultSubCommand extends PermissionBaseSubCommand {
         return;
       }
 
-      if (group.isDefault()) {
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-            language.getTranslation(GROUP_ALREADY_DEFAULT)));
-        return;
-      }
+      String message = language.getTranslation(GROUP_INFO)
+          .replaceAll("%id%", String.valueOf(group.getId()))
+          .replaceAll("%name%", group.getName())
+          .replaceAll("%prefix%", group.getPrefix())
+          .replaceAll("%priority%", String.valueOf(group.getPriority()))
+          .replaceAll("%default%", String.valueOf(group.isDefault()));
 
-      Group oldDefault = permissionService.getDefaultGroup();
-      group.setDefault(true);
-      oldDefault.setDefault(false);
-
-      permissionService.updateGroup(oldDefault);
-      permissionService.updateGroup(group);
-
-      sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-          language.getTranslation(GROUP_CHANGED_DEFAULT)));
+      sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     });
   }
 
