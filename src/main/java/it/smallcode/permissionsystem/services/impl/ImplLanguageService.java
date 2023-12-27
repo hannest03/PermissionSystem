@@ -46,7 +46,7 @@ public class ImplLanguageService implements LanguageService {
 
   @Override
   public Language getDefaultLanguage() {
-    return languageManager.getLanguage(null);
+    return languageManager.getLanguage(LanguageManager.DEFAULT_LANG_CODE);
   }
 
   @Override

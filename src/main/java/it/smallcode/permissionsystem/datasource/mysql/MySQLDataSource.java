@@ -236,7 +236,7 @@ public class MySQLDataSource implements PermissionDataSource, SignDataSource, La
     }
 
     try (PreparedStatement statement = database.getConnection()
-        .prepareStatement(queryBuilder.insert())) {
+        .prepareStatement(queryBuilder.replace())) {
       statement.setString(1, uuid.toString());
       statement.setInt(2, group.getId());
 

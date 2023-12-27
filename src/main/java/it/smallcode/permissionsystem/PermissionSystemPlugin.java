@@ -13,6 +13,7 @@ import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
 import it.smallcode.permissionsystem.handler.SignHandler;
 import it.smallcode.permissionsystem.handler.TablistHandler;
+import it.smallcode.permissionsystem.handler.TimedGroupsHandler;
 import it.smallcode.permissionsystem.languages.LanguageManager;
 import it.smallcode.permissionsystem.listeners.AsyncPreLoginListener;
 import it.smallcode.permissionsystem.listeners.QuitListener;
@@ -93,6 +94,8 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
     new JoinMessageHandler(this, serviceRegistry);
     new ChatMessageHandler(this, serviceRegistry);
+    new TimedGroupsHandler(this, serviceRegistry);
+    
     new AsyncPreLoginListener(this, serviceRegistry);
     new QuitListener(this, serviceRegistry);
 
