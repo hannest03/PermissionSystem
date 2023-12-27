@@ -1,6 +1,7 @@
 package it.smallcode.permissionsystem.datasource.mysql;
 
 import it.smallcode.permissionsystem.database.MySQLDatabase;
+import it.smallcode.permissionsystem.datasource.LanguageDataSource;
 import it.smallcode.permissionsystem.datasource.PermissionDataSource;
 import it.smallcode.permissionsystem.datasource.SignDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.builder.SQLQueryBuilder;
@@ -22,13 +23,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class MySQLDataSource implements PermissionDataSource, SignDataSource {
+public class MySQLDataSource implements PermissionDataSource, SignDataSource, LanguageDataSource {
 
   public static final String GROUP_TABLE = "groups";
   public static final String PERMISSIONS_TABLE = "permissions";
   public static final String PLAYER_GROUPS_TABLE = "playergroups";
 
   public static final String SIGN_TABLE = "signs";
+
+  public static final String PLAYER_LANGUAGE_TABLE = "playerlanguages";
 
   private final MySQLDatabase database;
 
@@ -354,6 +357,46 @@ public class MySQLDataSource implements PermissionDataSource, SignDataSource {
       statement.setInt(3, signLocation.y());
       statement.setInt(4, signLocation.z());
 
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
+  public String getLanguageCode(UUID uuid) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_LANGUAGE_TABLE)
+        .field("language_code")
+        .where(new BaseCondition("id_player = ?"))
+        .limit(1);
+
+    String languageCode = null;
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.select())) {
+      statement.setString(1, uuid.toString());
+
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        languageCode = resultSet.getString("language_code");
+      }
+      resultSet.close();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+
+    return languageCode;
+  }
+
+  @Override
+  public void setLanguageCode(UUID uuid, String languageCode) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PLAYER_LANGUAGE_TABLE)
+        .field("id_player")
+        .field("language_code");
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.replace())) {
+      statement.setString(1, uuid.toString());
+      statement.setString(2, languageCode);
       statement.executeUpdate();
     } catch (SQLException ex) {
       ex.printStackTrace();

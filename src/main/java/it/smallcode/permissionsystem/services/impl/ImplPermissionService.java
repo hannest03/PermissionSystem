@@ -5,7 +5,7 @@ import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.models.PlayerGroup;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.Service;
+import it.smallcode.permissionsystem.services.registry.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;

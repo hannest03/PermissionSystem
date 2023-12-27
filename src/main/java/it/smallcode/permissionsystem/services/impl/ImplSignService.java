@@ -2,8 +2,8 @@ package it.smallcode.permissionsystem.services.impl;
 
 import it.smallcode.permissionsystem.datasource.SignDataSource;
 import it.smallcode.permissionsystem.models.SignLocation;
-import it.smallcode.permissionsystem.services.Service;
 import it.smallcode.permissionsystem.services.SignService;
+import it.smallcode.permissionsystem.services.registry.Service;
 import java.util.Set;
 
 public class ImplSignService implements Service, SignService {

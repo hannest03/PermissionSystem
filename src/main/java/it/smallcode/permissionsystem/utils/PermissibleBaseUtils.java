@@ -1,6 +1,6 @@
 package it.smallcode.permissionsystem.utils;
 
-import it.smallcode.permissionsystem.services.Service;
+import it.smallcode.permissionsystem.services.registry.Service;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissibleBase;
 

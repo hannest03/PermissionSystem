@@ -33,3 +33,9 @@ CREATE TABLE signs (
     z INT NOT NULL,
     PRIMARY KEY (world, x, y, z)
 );
+
+CREATE TABLE playerlanguages(
+    id_player VARCHAR(36) NOT NULL,
+    language_code VARCHAR(10) NOT NULL,
+    PRIMARY KEY (id_player)
+);

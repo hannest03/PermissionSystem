@@ -1,8 +1,9 @@
 package it.smallcode.permissionsystem.listeners;
 
 import it.smallcode.permissionsystem.models.Group;
+import it.smallcode.permissionsystem.services.LanguageService;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,9 +14,11 @@ import org.bukkit.plugin.Plugin;
 public class AsyncPreLoginListener implements Listener {
 
   private final PermissionService permissionService;
+  private final LanguageService languageService;
 
   public AsyncPreLoginListener(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.permissionService = serviceRegistry.getService(PermissionService.class);
+    this.languageService = serviceRegistry.getService(LanguageService.class);
 
     Bukkit.getPluginManager().registerEvents(this, plugin);
   }
@@ -35,6 +38,8 @@ public class AsyncPreLoginListener implements Listener {
         permissionService.addPlayerGroup(e.getUniqueId(), defaultGroup);
       }
     }
+
+    languageService.loadPlayer(e.getUniqueId());
   }
 
 }

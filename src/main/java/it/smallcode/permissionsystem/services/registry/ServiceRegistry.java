@@ -1,4 +1,4 @@
-package it.smallcode.permissionsystem.services;
+package it.smallcode.permissionsystem.services.registry;
 
 import java.util.HashMap;
 import java.util.Map;

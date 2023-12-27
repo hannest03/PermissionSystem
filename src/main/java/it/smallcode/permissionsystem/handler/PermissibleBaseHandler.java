@@ -7,7 +7,7 @@ import it.smallcode.permissionsystem.handler.permissible.PermissionChecker;
 import it.smallcode.permissionsystem.handler.permissible.PlayerPermissibleBase;
 import it.smallcode.permissionsystem.models.PermissionInfo;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.util.HashMap;
 import java.util.Set;

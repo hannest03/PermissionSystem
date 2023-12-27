@@ -4,6 +4,7 @@ import it.smallcode.permissionsystem.commands.PermissionCommand;
 import it.smallcode.permissionsystem.database.MySQLDatabase;
 import it.smallcode.permissionsystem.datasource.cache.CacheSignDataSource;
 import it.smallcode.permissionsystem.datasource.mysql.MySQLDataSource;
+import it.smallcode.permissionsystem.datasource.observable.ObservableLanguageDataSource;
 import it.smallcode.permissionsystem.datasource.observable.ObservablePermissionDataSource;
 import it.smallcode.permissionsystem.datasource.observable.ObservableSignDataSource;
 import it.smallcode.permissionsystem.handler.ChatMessageHandler;
@@ -12,14 +13,19 @@ import it.smallcode.permissionsystem.handler.PermissibleBaseHandler;
 import it.smallcode.permissionsystem.handler.SidebarHandler;
 import it.smallcode.permissionsystem.handler.SignHandler;
 import it.smallcode.permissionsystem.handler.TablistHandler;
+import it.smallcode.permissionsystem.languages.LanguageManager;
 import it.smallcode.permissionsystem.listeners.AsyncPreLoginListener;
+import it.smallcode.permissionsystem.listeners.QuitListener;
+import it.smallcode.permissionsystem.services.LanguageService;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.ServiceRegistry;
 import it.smallcode.permissionsystem.services.SignService;
+import it.smallcode.permissionsystem.services.impl.ImplLanguageService;
 import it.smallcode.permissionsystem.services.impl.ImplPermissionService;
 import it.smallcode.permissionsystem.services.impl.ImplSignService;
+import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import it.smallcode.permissionsystem.utils.CraftBukkitPermissibleBaseUtils;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
+import java.io.File;
 import java.sql.SQLException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -64,6 +70,19 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
     serviceRegistry.registerService(PermissibleBaseUtils.class, permissibleBaseUtils);
 
+    File languageDirectory = new File(getDataFolder(), "translations");
+    languageDirectory.mkdirs();
+
+    LanguageManager languageManager = new LanguageManager();
+
+    Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+      languageManager.loadLanguages(languageDirectory);
+    });
+
+    ObservableLanguageDataSource languageDataSource = new ObservableLanguageDataSource(dataSource);
+    LanguageService languageService = new ImplLanguageService(languageManager, languageDataSource);
+    serviceRegistry.registerService(LanguageService.class, languageService);
+
     PermissibleBaseHandler permissibleBaseHandler = new PermissibleBaseHandler(
         this,
         serviceRegistry);
@@ -74,6 +93,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
     new JoinMessageHandler(this, serviceRegistry);
     new ChatMessageHandler(this, serviceRegistry);
     new AsyncPreLoginListener(this, serviceRegistry);
+    new QuitListener(this, serviceRegistry);
 
     Bukkit.getPluginCommand("permission")
         .setExecutor(new PermissionCommand(this, serviceRegistry));
@@ -84,6 +104,9 @@ public class PermissionSystemPlugin extends JavaPlugin {
     observableDataSource.subscribe(tablistHandler);
 
     observableSignDataSource.subscribe(signHandler);
+
+    languageDataSource.subscribe(signHandler);
+    languageDataSource.subscribe(sidebarHandler);
   }
 
   @Override

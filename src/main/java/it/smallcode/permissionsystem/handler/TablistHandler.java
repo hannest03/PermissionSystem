@@ -4,7 +4,7 @@ import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserv
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.ServiceRegistry;
+import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

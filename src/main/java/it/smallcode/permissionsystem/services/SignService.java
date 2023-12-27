@@ -1,6 +1,7 @@
 package it.smallcode.permissionsystem.services;
 
 import it.smallcode.permissionsystem.models.SignLocation;
+import it.smallcode.permissionsystem.services.registry.Service;
 import java.util.Set;
 
 public interface SignService extends Service {

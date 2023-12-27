@@ -93,6 +93,25 @@ public class SQLQueryBuilder {
     return "INSERT INTO " + table + "(" + fieldString + ") VALUES (" + valueString + ");";
   }
 
+  public String replace() {
+    if (fields.isEmpty()) {
+      return null;
+    }
+
+    StringBuilder fieldString = new StringBuilder();
+    StringBuilder valueString = new StringBuilder();
+
+    for (String field : fields) {
+      fieldString.append(field).append(",");
+      valueString.append("?,");
+    }
+
+    fieldString.deleteCharAt(fieldString.length() - 1);
+    valueString.deleteCharAt(valueString.length() - 1);
+
+    return "REPLACE INTO " + table + "(" + fieldString + ") VALUES (" + valueString + ");";
+  }
+
   public String delete() {
     StringBuilder query = new StringBuilder();
     query.append("DELETE FROM ").append(table);
