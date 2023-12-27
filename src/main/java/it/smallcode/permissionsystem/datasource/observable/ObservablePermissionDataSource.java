@@ -33,6 +33,14 @@ public class ObservablePermissionDataSource implements PermissionDataSource {
   }
 
   @Override
+  public void deleteGroup(Group group) {
+    dataSource.deleteGroup(group);
+
+    notify(PermissionEventType.GROUP_CHANGED);
+    notify(PermissionEventType.GROUP_PERMISSION_CHANGED);
+  }
+
+  @Override
   public void addPermission(Group group, String permission) {
     dataSource.addPermission(group, permission);
     notify(PermissionEventType.GROUP_PERMISSION_CHANGED);

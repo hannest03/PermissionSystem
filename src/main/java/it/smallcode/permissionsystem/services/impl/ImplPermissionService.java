@@ -88,6 +88,11 @@ public class ImplPermissionService implements Service, PermissionService {
     dataSource.createGroup(group);
   }
 
+  @Override
+  public void deleteGroup(Group group) {
+    dataSource.deleteGroup(group);
+  }
+
   public Group getGroupByName(String name) {
     for (Group group : getGroups()) {
       if (group.getName().equalsIgnoreCase(name)) {

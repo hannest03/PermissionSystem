@@ -94,6 +94,21 @@ public class MySQLDataSource implements PermissionDataSource, SignDataSource, La
   }
 
   @Override
+  public void deleteGroup(Group group) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(GROUP_TABLE)
+        .where(new BaseCondition("id = ?"));
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.delete())) {
+      statement.setInt(1, group.getId());
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
   public void addPermission(Group group, String permission) {
     if (hasPermission(group, permission)) {
       return;

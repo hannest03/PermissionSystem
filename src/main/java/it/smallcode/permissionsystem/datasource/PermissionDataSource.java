@@ -14,6 +14,8 @@ public interface PermissionDataSource {
 
   void updateGroup(Group group);
 
+  void deleteGroup(Group group);
+
   void addPermission(Group group, String permission);
 
   void removePermission(Group group, String permission);

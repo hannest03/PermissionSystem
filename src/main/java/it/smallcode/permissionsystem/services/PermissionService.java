@@ -33,6 +33,8 @@ public interface PermissionService extends Service {
 
   void createGroup(Group group);
 
+  void deleteGroup(Group group);
+
   Group getGroupByName(String name);
 
   Group getDefaultGroup();
