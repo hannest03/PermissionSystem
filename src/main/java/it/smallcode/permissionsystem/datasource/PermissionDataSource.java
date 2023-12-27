@@ -12,6 +12,12 @@ public interface PermissionDataSource {
 
   void createGroup(Group group);
 
+  void updateGroup(Group group);
+
+  void addPermission(Group group, String permission);
+
+  void removePermission(Group group, String permission);
+
   List<Group> getGroups();
 
   Group getDefaultGroup();

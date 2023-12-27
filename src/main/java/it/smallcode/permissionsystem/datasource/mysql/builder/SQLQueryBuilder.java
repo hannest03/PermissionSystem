@@ -3,6 +3,7 @@ package it.smallcode.permissionsystem.datasource.mysql.builder;
 import it.smallcode.permissionsystem.datasource.mysql.builder.condition.Condition;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SQLQueryBuilder {
 
@@ -91,6 +92,21 @@ public class SQLQueryBuilder {
     valueString.deleteCharAt(valueString.length() - 1);
 
     return "INSERT INTO " + table + "(" + fieldString + ") VALUES (" + valueString + ");";
+  }
+
+  public String update() {
+    if (fields.isEmpty()) {
+      return null;
+    }
+
+    String setFields = fields.stream().map(line -> line + " = ?").collect(Collectors.joining(", "));
+
+    String where = "";
+    if (whereCondition != null) {
+      where = " WHERE " + whereCondition.get();
+    }
+
+    return "UPDATE " + table + " SET " + setFields + where + ";";
   }
 
   public String replace() {

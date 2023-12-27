@@ -13,6 +13,12 @@ public interface PermissionService extends Service {
 
   void init();
 
+  void updateGroup(Group group);
+
+  void addGroupPermission(Group group, String permission);
+
+  void removeGroupPermission(Group group, String permission);
+
   Group getPrimaryGroup(UUID uuid);
 
   List<PlayerGroup> getPlayerGroups(UUID uuid);

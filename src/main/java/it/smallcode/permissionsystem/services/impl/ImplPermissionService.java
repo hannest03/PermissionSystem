@@ -27,6 +27,21 @@ public class ImplPermissionService implements Service, PermissionService {
     }
   }
 
+  @Override
+  public void updateGroup(Group group) {
+    dataSource.updateGroup(group);
+  }
+
+  @Override
+  public void addGroupPermission(Group group, String permission) {
+    dataSource.addPermission(group, permission);
+  }
+
+  @Override
+  public void removeGroupPermission(Group group, String permission) {
+    dataSource.removePermission(group, permission);
+  }
+
   public Group getPrimaryGroup(UUID uuid) {
     return dataSource.getPrimaryGroup(uuid);
   }

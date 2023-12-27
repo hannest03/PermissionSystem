@@ -1,11 +1,13 @@
 package it.smallcode.permissionsystem.handler;
 
+import com.google.common.collect.ImmutableList;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.services.PermissionService;
 import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -50,11 +52,6 @@ public class TablistHandler implements Listener, PermissionEventObserver {
       Group group = permissionService.getPrimaryGroup(player.getUniqueId());
 
       String teamName = getTeamName(group);
-      String oldTeamName = teamNames.get(group.getId());
-      if (teamNames.containsKey(group.getId()) && !teamName.equals(oldTeamName)) {
-        Team team = getOrCreateTeam(oldTeamName);
-        team.unregister();
-      }
       Team team = getOrCreateTeam(teamName);
       teamNames.put(group.getId(), teamName);
 
@@ -66,6 +63,27 @@ public class TablistHandler implements Listener, PermissionEventObserver {
 
   @Override
   public void onEvent(PermissionEventType eventType) {
+    if (eventType != PermissionEventType.GROUP_CHANGED) {
+      return;
+    }
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      for (Team team : scoreboard.getTeams()) {
+        team.unregister();
+      }
+
+      List<Player> players = ImmutableList.copyOf(Bukkit.getOnlinePlayers());
+      for (Player player : players) {
+        Group group = permissionService.getPrimaryGroup(player.getUniqueId());
+
+        String teamName = getTeamName(group);
+        Team team = getOrCreateTeam(teamName);
+        teamNames.put(group.getId(), teamName);
+
+        updateTeam(team, group);
+
+        team.addEntry(player.getName());
+      }
+    });
   }
 
   @Override

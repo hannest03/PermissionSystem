@@ -70,6 +70,97 @@ public class MySQLDataSource implements PermissionDataSource, SignDataSource, La
   }
 
   @Override
+  public void updateGroup(Group group) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(GROUP_TABLE)
+        .field("name")
+        .field("prefix")
+        .field("priority")
+        .field("is_default")
+        .where(new BaseCondition("id = ?"));
+
+    try (PreparedStatement statement = database.getConnection().prepareStatement(
+        queryBuilder.update())) {
+
+      statement.setString(1, group.getName());
+      statement.setString(2, group.getPrefix());
+      statement.setInt(3, group.getPriority());
+      statement.setBoolean(4, group.isDefault());
+      statement.setInt(5, group.getId());
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
+  public void addPermission(Group group, String permission) {
+    if (hasPermission(group, permission)) {
+      return;
+    }
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PERMISSIONS_TABLE)
+        .field("id_group")
+        .field("permission");
+
+    try (PreparedStatement statement = database.getConnection().prepareStatement(
+        queryBuilder.insert())) {
+
+      statement.setInt(1, group.getId());
+      statement.setString(2, permission);
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  @Override
+  public void removePermission(Group group, String permission) {
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PERMISSIONS_TABLE)
+        .where(
+            new AndCondition(
+                new BaseCondition("id_group = ?"),
+                new BaseCondition("permission = ?")
+            )
+        );
+
+    try (PreparedStatement statement = database.getConnection()
+        .prepareStatement(queryBuilder.delete())) {
+      statement.setInt(1, group.getId());
+      statement.setString(2, permission);
+
+      statement.executeUpdate();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  private boolean hasPermission(Group group, String permission) {
+    boolean exists = false;
+    SQLQueryBuilder queryBuilder = new SQLQueryBuilder(PERMISSIONS_TABLE)
+        .field("COUNT(*) AS count")
+        .where(new AndCondition(
+            new BaseCondition("id_group = ?"),
+            new BaseCondition("permission = ?")
+        ));
+    try (PreparedStatement statement = database.getConnection().prepareStatement(
+        queryBuilder.select())) {
+
+      statement.setInt(1, group.getId());
+      statement.setString(2, permission);
+
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        exists = resultSet.getInt("count") != 0;
+      }
+      resultSet.close();
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return exists;
+  }
+
+  @Override
   public List<Group> getGroups() {
     SQLQueryBuilder queryBuilder = new SQLQueryBuilder(GROUP_TABLE)
         .field("*");

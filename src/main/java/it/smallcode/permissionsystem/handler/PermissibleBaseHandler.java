@@ -1,5 +1,6 @@
 package it.smallcode.permissionsystem.handler;
 
+import com.google.common.collect.ImmutableList;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventType;
 import it.smallcode.permissionsystem.handler.permissible.OptimizedPermissions;
@@ -10,6 +11,7 @@ import it.smallcode.permissionsystem.services.PermissionService;
 import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -70,12 +72,21 @@ public class PermissibleBaseHandler implements Listener, PermissionEventObserver
 
   @Override
   public void onEvent(PermissionEventType eventType) {
+    if (eventType != PermissionEventType.GROUP_PERMISSION_CHANGED) {
+      return;
+    }
+    final List<Player> players = ImmutableList.copyOf(Bukkit.getOnlinePlayers());
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      for (Player player : players) {
+        updatePermissibleBase(player);
+        Bukkit.getScheduler().runTask(plugin, player::updateCommands);
+      }
+    });
   }
 
   @Override
   public void onEvent(PermissionEventType eventType, UUID uuid) {
-    if (eventType != PermissionEventType.GROUP_PERMISSION_CHANGED
-        && eventType != PermissionEventType.PLAYER_PERMISSION_CHANGED) {
+    if (eventType != PermissionEventType.PLAYER_PERMISSION_CHANGED) {
       return;
     }
     final Player player = Bukkit.getPlayer(uuid);

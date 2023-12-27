@@ -85,7 +85,13 @@ public class SignHandler implements Listener, PermissionEventObserver, SignEvent
 
   @Override
   public void onEvent(PermissionEventType eventType) {
-
+    if (eventType != PermissionEventType.GROUP_CHANGED) {
+      return;
+    }
+    List<Player> players = ImmutableList.copyOf(Bukkit.getOnlinePlayers());
+    for (Player player : players) {
+      eventUpdate(player.getUniqueId());
+    }
   }
 
   @Override

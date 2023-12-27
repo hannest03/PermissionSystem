@@ -26,6 +26,25 @@ public class ObservablePermissionDataSource implements PermissionDataSource {
   }
 
   @Override
+  public void updateGroup(Group group) {
+    dataSource.updateGroup(group);
+
+    notify(PermissionEventType.GROUP_CHANGED);
+  }
+
+  @Override
+  public void addPermission(Group group, String permission) {
+    dataSource.addPermission(group, permission);
+    notify(PermissionEventType.GROUP_PERMISSION_CHANGED);
+  }
+
+  @Override
+  public void removePermission(Group group, String permission) {
+    dataSource.removePermission(group, permission);
+    notify(PermissionEventType.GROUP_PERMISSION_CHANGED);
+  }
+
+  @Override
   public List<Group> getGroups() {
     return dataSource.getGroups();
   }
@@ -72,6 +91,12 @@ public class ObservablePermissionDataSource implements PermissionDataSource {
 
   public void unsubscribe(PermissionEventObserver observer) {
     observers.remove(observer);
+  }
+
+  private void notify(PermissionEventType eventType) {
+    for (PermissionEventObserver observer : observers) {
+      observer.onEvent(eventType);
+    }
   }
 
   private void notify(PermissionEventType eventType, UUID uuid) {

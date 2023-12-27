@@ -1,5 +1,6 @@
 package it.smallcode.permissionsystem.handler;
 
+import com.google.common.collect.ImmutableList;
 import fr.mrmicky.fastboard.FastBoard;
 import it.smallcode.permissionsystem.datasource.observable.LanguageChangeObserver;
 import it.smallcode.permissionsystem.datasource.observable.PermissionEventObserver;
@@ -10,6 +11,7 @@ import it.smallcode.permissionsystem.services.LanguageService;
 import it.smallcode.permissionsystem.services.PermissionService;
 import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -75,11 +77,24 @@ public class SidebarHandler implements Listener, PermissionEventObserver, Langua
 
   @Override
   public void onEvent(PermissionEventType eventType) {
+    if (eventType != PermissionEventType.GROUP_CHANGED) {
+      return;
+    }
 
+    final List<Player> players = ImmutableList.copyOf(Bukkit.getOnlinePlayers());
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+      for (Player player : players) {
+        updateScoreboard(player.getUniqueId());
+      }
+    });
   }
 
   @Override
   public void onEvent(PermissionEventType eventType, UUID uuid) {
+    if (eventType != PermissionEventType.PLAYER_GROUP_CHANGED) {
+      return;
+    }
+
     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
       updateScoreboard(uuid);
     });
