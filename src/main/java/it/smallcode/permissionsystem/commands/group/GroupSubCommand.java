@@ -13,5 +13,6 @@ public class GroupSubCommand extends PermissionListSubCommand {
     addSubCommand(new PrefixSubCommand(plugin, serviceRegistry));
     addSubCommand(new PermissionSubCommand(plugin, serviceRegistry));
     addSubCommand(new PrioritySubCommand(plugin, serviceRegistry));
+    addSubCommand(new DefaultSubCommand(plugin, serviceRegistry));
   }
 }
