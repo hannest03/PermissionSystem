@@ -25,6 +25,23 @@ public class SQLQueryBuilderTests {
   }
 
   @Test
+  public void testReplace() {
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test");
+      Assertions.assertNull(builder.replace());
+
+    }
+    {
+      String query = "REPLACE INTO test(id,field2) VALUES (?,?);";
+
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id")
+          .field("field2");
+      Assertions.assertEquals(query, builder.replace());
+    }
+  }
+
+  @Test
   public void testSelect() {
     {
       SQLQueryBuilder builder = new SQLQueryBuilder("test")
@@ -35,7 +52,10 @@ public class SQLQueryBuilderTests {
       String expected = "SELECT id,name FROM test WHERE name = 'Test';";
       Assertions.assertEquals(expected, builder.select());
     }
+  }
 
+  @Test
+  public void testLimit() {
     {
       SQLQueryBuilder builder = new SQLQueryBuilder("test")
           .field("id")
@@ -45,7 +65,6 @@ public class SQLQueryBuilderTests {
       String expected = "SELECT id,name FROM test LIMIT 1;";
       Assertions.assertEquals(expected, builder.select());
     }
-
     {
       SQLQueryBuilder builder = new SQLQueryBuilder("test")
           .field("id")
@@ -56,5 +75,56 @@ public class SQLQueryBuilderTests {
       String expected = "SELECT id,name FROM test WHERE name = 'Test' LIMIT 1;";
       Assertions.assertEquals(expected, builder.select());
     }
+  }
+
+  @Test
+  public void testOrder() {
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id")
+          .field("name")
+          .order("id ASC");
+
+      String expected = "SELECT id,name FROM test ORDER BY id ASC;";
+      Assertions.assertEquals(expected, builder.select());
+    }
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id")
+          .field("name")
+          .order("id ASC")
+          .order("name DESC");
+
+      String expected = "SELECT id,name FROM test ORDER BY id ASC,name DESC;";
+      Assertions.assertEquals(expected, builder.select());
+    }
+  }
+
+  @Test
+  public void testDelete() {
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("asd");
+      String expected = "DELETE FROM test;";
+      Assertions.assertEquals(expected, builder.delete());
+    }
+    {
+      String query = "DELETE FROM test WHERE id = 'asd';";
+
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .where(new BaseCondition("id = 'asd'"));
+
+      Assertions.assertEquals(query, builder.delete());
+    }
+  }
+
+  @Test
+  public void testJoin() {
+    SQLQueryBuilder builder = new SQLQueryBuilder("test")
+        .field("*")
+        .join("test2", new BaseCondition("test.id = test2.id_test"));
+
+    String expected = "SELECT * FROM test INNER JOIN test2 ON test.id = test2.id_test;";
+    Assertions.assertEquals(expected, builder.select());
   }
 }

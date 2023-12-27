@@ -136,6 +136,7 @@ public class SQLQueryBuilder {
       query.append(" WHERE ").append(whereCondition.get());
     }
 
+    query.append(";");
     return query.toString();
   }
 
