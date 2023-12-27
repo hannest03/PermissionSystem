@@ -28,6 +28,7 @@ import it.smallcode.permissionsystem.utils.PermissibleBaseUtils;
 import java.io.File;
 import java.sql.SQLException;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PermissionSystemPlugin extends JavaPlugin {
@@ -95,8 +96,11 @@ public class PermissionSystemPlugin extends JavaPlugin {
     new AsyncPreLoginListener(this, serviceRegistry);
     new QuitListener(this, serviceRegistry);
 
-    Bukkit.getPluginCommand("permission")
-        .setExecutor(new PermissionCommand(this, serviceRegistry));
+    PermissionCommand permissionCommand = new PermissionCommand(this, serviceRegistry);
+
+    PluginCommand command = Bukkit.getPluginCommand("permission");
+    command.setExecutor(permissionCommand);
+    command.setTabCompleter(permissionCommand);
 
     observableDataSource.subscribe(permissibleBaseHandler);
     observableDataSource.subscribe(sidebarHandler);

@@ -58,6 +58,17 @@ public class ImplPermissionService implements Service, PermissionService {
     dataSource.addPlayerGroup(uuid, group, instant);
   }
 
+  @Override
+  public boolean hasPlayerGroup(UUID uuid, Group group) {
+    List<PlayerGroup> groups = getPlayerGroups(uuid);
+    for (PlayerGroup playerGroup : groups) {
+      if (playerGroup.group().equals(group)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void removePlayerGroup(UUID uuid, Group group) {
     dataSource.removePlayerGroup(uuid, group);
     List<PlayerGroup> groups = getPlayerGroups(uuid);

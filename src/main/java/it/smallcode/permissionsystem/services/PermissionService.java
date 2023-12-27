@@ -27,6 +27,8 @@ public interface PermissionService extends Service {
 
   void addPlayerGroup(UUID uuid, Group group, Instant instant);
 
+  boolean hasPlayerGroup(UUID uuid, Group group);
+
   void removePlayerGroup(UUID uuid, Group group);
 
   void createGroup(Group group);

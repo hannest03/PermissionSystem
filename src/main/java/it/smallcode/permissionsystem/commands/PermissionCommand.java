@@ -1,51 +1,52 @@
 package it.smallcode.permissionsystem.commands;
 
+import it.smallcode.permissionsystem.commands.command.SubCommand;
+import it.smallcode.permissionsystem.commands.command.SubCommandSender;
+import it.smallcode.permissionsystem.commands.command.bukkit.BukkitCommandSender;
+import it.smallcode.permissionsystem.commands.group.GroupSubCommand;
+import it.smallcode.permissionsystem.commands.language.LanguageSubCommand;
+import it.smallcode.permissionsystem.commands.player.PlayerSubCommand;
+import it.smallcode.permissionsystem.commands.sign.SignSubCommand;
 import it.smallcode.permissionsystem.languages.Language;
-import it.smallcode.permissionsystem.models.Group;
 import it.smallcode.permissionsystem.models.PlayerGroup;
-import it.smallcode.permissionsystem.models.adapter.SignLocationAdapter;
 import it.smallcode.permissionsystem.services.LanguageService;
 import it.smallcode.permissionsystem.services.PermissionService;
-import it.smallcode.permissionsystem.services.SignService;
 import it.smallcode.permissionsystem.services.registry.ServiceRegistry;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class PermissionCommand implements CommandExecutor {
+public class PermissionCommand implements CommandExecutor, TabCompleter {
 
   private static final String ONLY_FOR_PLAYERS = "command_only_for_players";
   private static final String YOUR_GROUPS_ARE = "your_groups_are";
-  private static final String GROUP_EXISTS_ALREADY = "group_exists_already";
-  private static final String GROUP_CREATED = "group_created";
-  private static final String GROUP_PREFIX_CHANGED = "group_prefix_changed";
-  private static final String GROUP_PRIORITY_CHANGED = "group_priority_changed";
-  private static final String GROUP_PERMISSION_CHANGED = "group_permission_changed";
-  private static final String GROUP_DOES_NOT_EXIST = "group_does_not_exist";
-  private static final String PLAYER_GROUP_ADDED = "player_group_added";
-  private static final String PLAYER_GROUP_REMOVED = "player_group_removed";
-  private static final String HAVE_TO_LOOK_AT_SIGN = "have_to_look_at_sign";
+  private static final String OUTPUT_FORMAT = "output_format";
 
   private final Plugin plugin;
   private final PermissionService permissionService;
-  private final SignService signService;
   private final LanguageService languageService;
 
-  private final SignLocationAdapter signLocationAdapter = new SignLocationAdapter();
+  private final List<SubCommand> subCommands = new LinkedList<>();
 
   public PermissionCommand(Plugin plugin, ServiceRegistry serviceRegistry) {
     this.plugin = plugin;
     this.permissionService = serviceRegistry.getService(PermissionService.class);
-    this.signService = serviceRegistry.getService(SignService.class);
     this.languageService = serviceRegistry.getService(LanguageService.class);
+
+    subCommands.add(new GroupSubCommand(plugin, serviceRegistry));
+    subCommands.add(new LanguageSubCommand(plugin, serviceRegistry));
+    subCommands.add(new SignSubCommand(plugin, serviceRegistry));
+    subCommands.add(new PlayerSubCommand(plugin, serviceRegistry));
   }
 
   @Override
@@ -68,247 +69,70 @@ public class PermissionCommand implements CommandExecutor {
           String message = ChatColor.translateAlternateColorCodes('&',
               language.getTranslation(YOUR_GROUPS_ARE));
           player.sendMessage(message);
-          player.sendMessage(groupText);
+
+          final String format = language.getTranslation(OUTPUT_FORMAT);
+          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+              format.replaceAll("%output%", groupText)));
         });
+      } else {
+        Language language = getLanguage(sender);
+        sender.sendMessage(
+            ChatColor.translateAlternateColorCodes('&', language.getTranslation(ONLY_FOR_PLAYERS)));
       }
     } else {
-      String type = args[0].toLowerCase();
-      switch (type) {
-        case "group" -> handleGroupCommand(sender, args);
-        case "player" -> handlePlayerCommand(sender, args);
-        case "sign" -> handleSignCommand(sender, args);
-        case "language" -> handleLanguageCommand(sender, args);
+      Optional<SubCommand> possibleSubCommand = subCommands.stream()
+          .filter(subCommand -> subCommand.hasPermission(new BukkitCommandSender(sender)))
+          .filter(subCommand -> subCommand.getName().equalsIgnoreCase(args[0]))
+          .findFirst();
+
+      if (!possibleSubCommand.isPresent()) {
+        sendHelp(sender);
+      } else {
+        String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+        SubCommand subCommand = possibleSubCommand.get();
+        subCommand.command(new BukkitCommandSender(sender), newArgs);
       }
     }
     return false;
   }
 
-  private void handleLanguageCommand(CommandSender sender, String[] args) {
-    if (!(sender instanceof Player)) {
-      return;
-    }
-    final Player player = (Player) sender;
-    if (args.length != 2) {
-      player.sendMessage("/permission language <code>");
-      return;
-    }
+  @Override
+  public List<String> onTabComplete(CommandSender sender, Command command, String s,
+      String[] args) {
 
-    String languageCode = args[1].toLowerCase();
-    languageService.setLanguage(player.getUniqueId(), languageCode);
+    if (args.length <= 1) {
+      String given = args.length == 1 ? args[0] : "";
+      return subCommands.stream()
+          .filter(subCommand -> subCommand.hasPermission(new BukkitCommandSender(sender)))
+          .map(SubCommand::getName)
+          .filter(name -> name.toLowerCase().contains(given.toLowerCase())).toList();
+    }
+    List<String> options = new LinkedList<>();
+    String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+    subCommands.stream()
+        .filter(subCommand -> subCommand.hasPermission(new BukkitCommandSender(sender)))
+        .filter(subCommand -> subCommand.getName().equalsIgnoreCase(args[0]))
+        .forEach(subCommand -> options.addAll(
+            subCommand.autoComplete(new BukkitCommandSender(sender), newArgs)
+        ));
+    return options;
   }
 
-  private void handleGroupCommand(CommandSender sender, String[] args) {
-    if (args.length == 1) {
-      sender.sendMessage("/permission group create <name>");
-      sender.sendMessage("/permission group prefix <group> <prefix>");
-      sender.sendMessage("/permission group add <group> <permission>");
-      sender.sendMessage("/permission group remove <group> <permission>");
-      sender.sendMessage("/permission group priority <group> <priority>");
-      sender.sendMessage("/permission group info <group>");
-      return;
-    }
+  private void sendHelp(CommandSender sender) {
+    List<String> help = new LinkedList<>();
+    help.add("");
+    SubCommandSender subCommandSender = new BukkitCommandSender(sender);
+    subCommands.stream()
+        .filter(subCommand -> subCommand.hasPermission(subCommandSender))
+        .forEach(subCommand -> help.addAll(subCommand.getHelp(subCommandSender)));
 
     Language language = getLanguage(sender);
-    if (args[1].equalsIgnoreCase("create")) {
-      if (args.length != 3) {
-        sender.sendMessage("/permission group create <name>");
-        return;
-      }
-      final String groupName = args[2];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group != null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_EXISTS_ALREADY)));
-          return;
-        }
-        permissionService.createGroup(new Group(groupName, "", 0));
 
-        String message = language.getTranslation(GROUP_CREATED)
-            .replaceAll("%group%", groupName);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    } else if (args[1].equalsIgnoreCase("prefix")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission group prefix <group> <prefix>");
-        return;
-      }
-      final String groupName = args[2];
-      final String prefix = args[3];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-        group.setPrefix(prefix);
-        permissionService.updateGroup(group);
-
-        String message = language.getTranslation(GROUP_PREFIX_CHANGED)
-            .replaceAll("%group%", groupName);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    } else if (args[1].equalsIgnoreCase("priority")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission group priority <group> <priority>");
-        return;
-      }
-      final String groupName = args[2];
-      final int priority = Integer.parseInt(args[3]);
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-        group.setPriority(priority);
-        permissionService.updateGroup(group);
-
-        String message = language.getTranslation(GROUP_PRIORITY_CHANGED)
-            .replaceAll("%group%", groupName);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    } else if (args[1].equalsIgnoreCase("remove")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission group remove <group> <permission>");
-        return;
-      }
-      final String groupName = args[2];
-      final String permission = args[3];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-        permissionService.removeGroupPermission(group, permission);
-
-        String message = language.getTranslation(GROUP_PERMISSION_CHANGED)
-            .replaceAll("%group%", groupName);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    } else if (args[1].equalsIgnoreCase("add")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission group add <group> <permission>");
-        return;
-      }
-      final String groupName = args[2];
-      final String permission = args[3];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-        permissionService.addGroupPermission(group, permission);
-
-        String message = language.getTranslation(GROUP_PERMISSION_CHANGED)
-            .replaceAll("%group%", groupName);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    }
-  }
-
-  private void handlePlayerCommand(CommandSender sender, String[] args) {
-    if (args.length == 1) {
-      sender.sendMessage("/permission player add <name> <group> [<dd:hh:mm:ss>]");
-      sender.sendMessage("/permission player remove <name> <group>");
-      return;
-    }
-
-    Language language = getLanguage(sender);
-    if (args[1].equalsIgnoreCase("add")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission player add <name> <group> [<dd:hh:mm:ss>]");
-        return;
-      }
-      final String playerName = args[2];
-      final String groupName = args[3];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        // TODO: Check if player already has group
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-
-        //TODO: replace with UUID Fetcher
-        Player player = Bukkit.getPlayer(playerName);
-        permissionService.addPlayerGroup(player.getUniqueId(), group);
-
-        String message = language.getTranslation(PLAYER_GROUP_ADDED)
-            .replaceAll("%player%", playerName)
-            .replaceAll("%group%", groupName);
-
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    } else if (args[1].equalsIgnoreCase("remove")) {
-      if (args.length != 4) {
-        sender.sendMessage("/permission player remove <name> <group>");
-        return;
-      }
-      final String playerName = args[2];
-      final String groupName = args[3];
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        Group group = permissionService.getGroupByName(groupName);
-        if (group == null) {
-          sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-              language.getTranslation(GROUP_DOES_NOT_EXIST)));
-          return;
-        }
-
-        //TODO: replace with UUID Fetcher
-        Player player = Bukkit.getPlayer(playerName);
-        permissionService.removePlayerGroup(player.getUniqueId(), group);
-
-        String message = language.getTranslation(PLAYER_GROUP_REMOVED)
-            .replaceAll("%player%", playerName)
-            .replaceAll("%group%", groupName);
-
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-      });
-    }
-  }
-
-  private void handleSignCommand(CommandSender sender, String[] args) {
-    Language language = getLanguage(sender);
-    if (!(sender instanceof Player)) {
+    final String format = language.getTranslation(OUTPUT_FORMAT);
+    for (String s : help) {
       sender.sendMessage(
-          ChatColor.translateAlternateColorCodes('&', language.getTranslation(ONLY_FOR_PLAYERS)));
-      return;
-    }
-    if (args.length == 1) {
-      sender.sendMessage("/permission sign add");
-      sender.sendMessage("/permission sign remove");
-      return;
-    }
-
-    final Player player = (Player) sender;
-    if (args[1].equalsIgnoreCase("add")) {
-      final Block block = player.getTargetBlockExact(4);
-      if (block == null || block.getType() != Material.OAK_SIGN) {
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-            language.getTranslation(HAVE_TO_LOOK_AT_SIGN)));
-        return;
-      }
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        signService.addSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
-      });
-    } else if (args[1].equalsIgnoreCase("remove")) {
-      final Block block = player.getTargetBlockExact(4);
-      if (block == null || block.getType() != Material.OAK_SIGN) {
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-            language.getTranslation(HAVE_TO_LOOK_AT_SIGN)));
-        return;
-      }
-      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-        signService.removeSignLocation(signLocationAdapter.fromLocation(block.getLocation()));
-      });
+          ChatColor.translateAlternateColorCodes('&',
+              format.replaceAll("%output%", "/permission " + s)));
     }
   }
 
@@ -318,5 +142,4 @@ public class PermissionCommand implements CommandExecutor {
     }
     return languageService.getDefaultLanguage();
   }
-
 }

@@ -1,5 +1,7 @@
 package it.smallcode.permissionsystem.models;
 
+import java.util.Objects;
+
 public class Group {
 
   private Integer id;
@@ -21,6 +23,23 @@ public class Group {
 
   public Group(String name, String prefix, int priority) {
     this(null, name, prefix, priority, false);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Group group = (Group) o;
+    return Objects.equals(id, group.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 
   public Integer getId() {
