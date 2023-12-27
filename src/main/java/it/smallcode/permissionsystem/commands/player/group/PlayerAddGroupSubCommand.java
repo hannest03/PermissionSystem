@@ -101,7 +101,7 @@ public class PlayerAddGroupSubCommand extends PermissionBaseSubCommand {
     } else if (args.length == 2) {
       return List.of("<group>");
     } else if (args.length == 3) {
-      return List.of("[<dd:hh:mm:ss>]");
+      return List.of("[<[d][h][m][s]>]");
     }
     return List.of();
   }

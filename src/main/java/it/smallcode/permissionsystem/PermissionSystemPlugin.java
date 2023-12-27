@@ -30,6 +30,7 @@ import java.io.File;
 import java.sql.SQLException;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PermissionSystemPlugin extends JavaPlugin {
@@ -40,8 +41,21 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    database = new MySQLDatabase("localhost", 3306, "permissions", "root",
-        () -> "");
+
+    final FileConfiguration cfg = getConfig();
+    cfg.addDefault("database.host", "localhost");
+    cfg.addDefault("database.port", 3306);
+    cfg.addDefault("database.database", "permissions");
+    cfg.addDefault("database.user", "root");
+    cfg.addDefault("database.password", "");
+
+    cfg.options().copyDefaults(true);
+
+    saveConfig();
+
+    database = new MySQLDatabase(cfg.getString("database.host"), cfg.getInt("database.port"),
+        cfg.getString("database.database"), cfg.getString("database.user"),
+        () -> cfg.getString("database.password"));
 
     serviceRegistry = new ServiceRegistry();
 
@@ -95,7 +109,7 @@ public class PermissionSystemPlugin extends JavaPlugin {
     new JoinMessageHandler(this, serviceRegistry);
     new ChatMessageHandler(this, serviceRegistry);
     new TimedGroupsHandler(this, serviceRegistry);
-    
+
     new AsyncPreLoginListener(this, serviceRegistry);
     new QuitListener(this, serviceRegistry);
 
