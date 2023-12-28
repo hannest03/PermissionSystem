@@ -45,4 +45,32 @@ public class BaseSubCommandTest {
         baseSubCommand.autoComplete(sender, new String[]{}).toArray(String[]::new));
   }
 
+  @Test
+  public void testBaseSubCommandGetHelp() {
+    SubCommandSender sender = new SubCommandSender() {
+      @Override
+      public boolean hasPermission(String permission) {
+        return true;
+      }
+
+      @Override
+      public void sendMessage(String message) {
+      }
+
+      @Override
+      public CommandSender sender() {
+        return null;
+      }
+    };
+
+    BaseSubCommand baseSubCommand = new BaseSubCommand("handle", "test") {
+      @Override
+      protected void handleCommand(SubCommandSender sender, String[] args) {
+      }
+    };
+
+    Assertions.assertArrayEquals(new String[]{"test"},
+        baseSubCommand.getHelp(sender).toArray(String[]::new));
+  }
+
 }

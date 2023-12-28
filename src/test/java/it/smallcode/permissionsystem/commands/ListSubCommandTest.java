@@ -36,7 +36,6 @@ public class ListSubCommandTest {
 
       @Override
       protected List<String> handleAutoComplete(SubCommandSender sender, String[] args) {
-        System.out.println(args);
         List<String> list = new LinkedList<>();
         list.add("handle");
         return list;
@@ -83,5 +82,46 @@ public class ListSubCommandTest {
     Assertions.assertArrayEquals(new String[]{"handle", "handle2"},
         secondListSubCommand.autoComplete(sender, new String[]{"test", "handle"})
             .toArray(String[]::new));
+  }
+
+  @Test
+  public void testSubCommandGetHelp() {
+    SubCommandSender sender = new SubCommandSender() {
+      @Override
+      public boolean hasPermission(String permission) {
+        return true;
+      }
+
+      @Override
+      public void sendMessage(String message) {
+      }
+
+      @Override
+      public CommandSender sender() {
+        return null;
+      }
+    };
+
+    BaseSubCommand baseSubCommand = new BaseSubCommand("handle", "test") {
+      @Override
+      protected void handleCommand(SubCommandSender sender, String[] args) {
+      }
+    };
+
+    ListSubCommand listSubCommand = new ListSubCommand("test");
+    listSubCommand.addSubCommand(baseSubCommand);
+
+    Assertions.assertArrayEquals(new String[]{"test test"},
+        listSubCommand.getHelp(sender).toArray(String[]::new));
+
+    listSubCommand.addSubCommand(new BaseSubCommand("handle2", "test2") {
+      @Override
+      protected void handleCommand(SubCommandSender sender, String[] args) {
+
+      }
+    });
+
+    Assertions.assertArrayEquals(new String[]{"test test", "test test2"},
+        listSubCommand.getHelp(sender).toArray(String[]::new));
   }
 }
