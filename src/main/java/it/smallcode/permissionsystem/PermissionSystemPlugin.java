@@ -53,7 +53,10 @@ public class PermissionSystemPlugin extends JavaPlugin {
 
     saveConfig();
 
-    database = new MySQLDatabase(cfg.getString("database.host"), cfg.getInt("database.port"),
+    String portString = cfg.getString("database.port", "3306");
+    int port = Integer.parseInt(portString);
+
+    database = new MySQLDatabase(cfg.getString("database.host"), port,
         cfg.getString("database.database"), cfg.getString("database.user"),
         () -> cfg.getString("database.password"));
 
