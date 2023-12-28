@@ -66,7 +66,7 @@ public class SQLQueryBuilder {
       query.append(" ORDER BY ").append(String.join(",", orders));
     }
 
-    if (limit != null && limit >= 0) {
+    if (limit != null && limit >= 1) {
       query.append(" LIMIT ").append(limit);
     }
 

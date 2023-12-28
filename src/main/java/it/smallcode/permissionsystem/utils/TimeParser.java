@@ -9,6 +9,9 @@ public class TimeParser {
   private static final String PATTERN_STRING = "((\\d+)d)?((\\d+)h)?((\\d+)m)?((\\d+)s)?";
   private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
 
+  private TimeParser() {
+  }
+
   public static Duration parseDuration(String durationString) {
     Matcher matcher = PATTERN.matcher(durationString);
 

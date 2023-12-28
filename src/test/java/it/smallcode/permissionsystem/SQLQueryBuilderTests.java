@@ -75,6 +75,16 @@ public class SQLQueryBuilderTests {
       String expected = "SELECT id,name FROM test WHERE name = 'Test' LIMIT 1;";
       Assertions.assertEquals(expected, builder.select());
     }
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id")
+          .field("name")
+          .where(new BaseCondition("name = 'Test'"))
+          .limit(0);
+
+      String expected = "SELECT id,name FROM test WHERE name = 'Test';";
+      Assertions.assertEquals(expected, builder.select());
+    }
   }
 
   @Test
@@ -126,5 +136,26 @@ public class SQLQueryBuilderTests {
 
     String expected = "SELECT * FROM test INNER JOIN test2 ON test.id = test2.id_test;";
     Assertions.assertEquals(expected, builder.select());
+  }
+
+  @Test
+  public void testUpdate() {
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test");
+      Assertions.assertNull(builder.update());
+    }
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id");
+      String expected = "UPDATE test SET id = ?;";
+      Assertions.assertEquals(expected, builder.update());
+    }
+    {
+      SQLQueryBuilder builder = new SQLQueryBuilder("test")
+          .field("id")
+          .where(new BaseCondition("id = 5"));
+      String expected = "UPDATE test SET id = ? WHERE id = 5;";
+      Assertions.assertEquals(expected, builder.update());
+    }
   }
 }
